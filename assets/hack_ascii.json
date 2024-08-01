@@ -1,0 +1,27 @@
+{
+	"kerning": false,
+	
+	//"paddingRight": 1, // empty pixels right of each glyphe horizontal
+	
+	// default glyphstyle
+	"width" : 15,
+	"height": 27,
+	"color" : 0x50e040ff,
+	
+	// (globally for all ranges)
+	//"tiles": { "x": 16, "y":6  }, // how much the image is splitted into tiles
+	//"line":{ "height":40, "base":30 }, // line metric
+	
+	"ranges":[
+		{
+			"image": "hack_ascii.png",
+			"slot" : { "width": 240, "height":162  },
+			"tiles": { "x": 16, "y":6  }, // how much the image is splitted into tiles
+			"line" : { "height":30, "base":21.75 }, // line metric
+			"range": { "min": 0x0020, "max":0x007f }
+			//"styles": [ "regular", "bold", "italic" ] // results in image-filenames like: "hack_ascii_italic.png",
+		}
+	]
+	
+
+}
