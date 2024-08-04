@@ -27,31 +27,31 @@ class Lyapunow implements Element
 		
 		program.injectIntoFragmentShader(
 		"
-			float func(float x, float y, float a, float b)
+			float func(float i, float n, float a, float b)
 			{
-				return a*sin(x+y)*sin(x+y)+b;
+				return a*sin(i+n)*sin(i+n)+b;
 				// return #FORMULA;
 			}
 
-			float deriv(float x, float y, float a, float b)
+			float deriv(float i, float n, float a, float b)
 			{
-				return a*sin(2.0*(x+y));
+				return a*sin(2.0*(i+n));
 				// return #DERIVATE;
 			}
 
-			void pre_step(inout float x, vec2 p, float p1, float p2)
+			void pre_step(inout float i, vec2 xy, float p1, float p2)
 			{
-				x = func(x,p.x,p1,p2);
-				x = func(x,p.y,p1,p2);
+				i = func(i,xy.x,p1,p2);
+				i = func(i,xy.y,p1,p2);
 			}
 
-			void main_step(inout float index, inout int iter, inout float x, vec2 p, float p1, float p2, float balance)
+			void main_step(inout float index, inout float i, vec2 xy, float p1, float p2, float balance)
 			{
-				x = func(x,p.x,p1,p2);
-				index += (  log(abs(deriv(x,p.x,p1,p2)))*balance + deriv(x,p.x,p1,p2)*(1.0-balance)  ) / 2.0;
-				x = func(x,p.y,p1,p2);
-				index += (  log(abs(deriv(x,p.y,p1,p2)))*balance + deriv(x,p.y,p1,p2)*(1.0-balance)  ) / 2.0;
-				iter = iter + 2;
+				i = func(i,xy.x,p1,p2);
+				index += (  log(abs(deriv(i,xy.x,p1,p2)))*balance + deriv(i,xy.x,p1,p2)*(1.0-balance)  ) / 2.0;
+				i = func(i,xy.y,p1,p2);
+				index += (  log(abs(deriv(i,xy.y,p1,p2)))*balance + deriv(i,xy.y,p1,p2)*(1.0-balance)  ) / 2.0;
+				// iter = iter + 2;
 			}
 
 			vec4 lyapunow()
@@ -68,50 +68,53 @@ class Lyapunow implements Element
 
 
 				// Parameter
-				float x = uStart;
-				vec2 p = (vTexCoord - uPosition) / uScale;
+				float i = uStart;
+				vec2 xy = (vTexCoord - uPosition) / uScale;
 				float p1 = uParam.x;
 				float p2 = uParam.y;
+				
 				int iter_pre =  int(floor(uIteration.x));
 				int iter_main = int(floor(uIteration.y));
+				float iter_main_full = floor(uIteration.y) * 2.0; // todo, the 2.0 is generated in depend of how long the sequence is !
+				if (iter_main_full == 0.0) iter_main_full = 1.175494351e-38;
+
 				float nabla_pre = uIteration.x - float(iter_pre);
 				float nabla_main = uIteration.y - float(iter_main);
 				
 				float index = 0.0;
-				int iter = 0;
 				
 				// pre-iteration ##########################
 				
-				for (int i = 0; i < 21; i++) {
-					if (i < iter_pre)
+				for (int iter = 0; iter < 21; iter++) {
+					if (iter < iter_pre)
 					{
-						pre_step(x, p, p1, p2);
+						pre_step(i, xy, p1, p2);
 					}
 				}
 				if (nabla_pre != 0.0) {
-					float x_pre = x;
-					pre_step(x, p, p1, p2);
-					x = x*nabla_pre + x_pre*(1.0-nabla_pre);
+					float x_pre = i;
+					pre_step(i, xy, p1, p2);
+					i = i*nabla_pre + x_pre*(1.0-nabla_pre);
 				}
 					
 				// main-iteration ########################
 				
-				for (int i = 0; i < 201; i++) {
-					if (i < iter_main)
+				for (int iter = 0; iter < 201; iter++) {
+					if (iter < iter_main)
 					{
-						main_step(index, iter, x, p, p1, p2, uBalance);
+						main_step(index, i, xy, p1, p2, uBalance);
 					}
 				}
 				
 				if (nabla_main == 0.0) {
-					index = (iter != 0) ? index/float(iter) : 0.0;
+					index = index/iter_main_full;
 				}
 				else {
-					float index_pre = (iter != 0) ? index/float(iter) : 0.0;
+					float index_pre = index/iter_main_full;
 
-					main_step(index, iter, x, p, p1, p2, uBalance);
+					main_step(index, i, xy, p1, p2, uBalance);
 
-					index = (iter != 0) ? index/float(iter) : 0.0;
+					index = index/iter_main_full;
 					index = index*nabla_main + index_pre*(1.0-nabla_main);
 				}
 
