@@ -1,11 +1,17 @@
 package ui;
 
-import peote.text.Font;
+// import peote.text.Font;
 
-import peote.ui.interactive.*;
-// import peote.ui.style.interfaces.*;
-import peote.ui.config.*;
-// import peote.ui.event.*;
+import peote.ui.interactive.UITextLine;
+import peote.ui.interactive.UIArea;
+
+import peote.ui.config.TextConfig;
+import peote.ui.config.AreaConfig;
+
+// import peote.ui.style.interfaces.Style;
+import peote.ui.event.PointerEvent;
+import peote.ui.event.WheelEvent;
+
 import peote.ui.interactive.interfaces.ParentElement;
 
 class UiMainArea extends UIArea implements ParentElement
@@ -14,7 +20,7 @@ class UiMainArea extends UIArea implements ParentElement
 
 
 	public function new(xPosition:Int, yPosition:Int, width:Int, height:Int, zIndex:Int = 0,
-		font:Font<UiFontStyle>,
+		font:peote.text.Font<UiFontStyle>,
 		fontStyle:UiFontStyle,
 		textConfig:TextConfig,
 		?config:AreaConfig
@@ -27,7 +33,7 @@ class UiMainArea extends UIArea implements ParentElement
 		// -----------------------------------------------------------
 		
 		var headerSize:Int = 20;
-		var gap:Int = 3;		
+		var gap:Int = 4;		
 		
 		// --------------------------
 		// ---- header textline -----		
@@ -64,7 +70,7 @@ class UiMainArea extends UIArea implements ParentElement
 		}
 		add(formulaInput);
 		
-				
+		// formula.onChange
 		
 				
 		// --- re-arrange inner content if area size is changing ---

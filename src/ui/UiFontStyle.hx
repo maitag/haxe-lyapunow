@@ -9,9 +9,9 @@ class UiFontStyle implements FontStyle
 	//@global public var color:Color = Color.BLACK;
 	public var color:Color = Color.BLACK;
 	
-	//@global public var width:Float = 16.0;
+	// @global public var width:Float = 15.0;
 	public var width:Float = 7.5;
-	//@global public var height:Float = 16.0;
+	// @global public var height:Float = 27.0;
 	public var height:Float = 13.5;
 	
 	//@global public var zIndex:Int = 0;
