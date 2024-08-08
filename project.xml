@@ -25,8 +25,9 @@
 	
 	<haxelib name="peote-view" />
 	<haxelib name="peote-text" />
-	<haxelib name="input2action" />
 	<haxelib name="peote-ui" />
+	<haxelib name="input2action" />
+	<haxelib name="formula" />
 	
 	<!-- TODO: --><!-- <haxedef name="peoteui_multitouch" /> -->
 	

@@ -3,7 +3,7 @@ package ui;
 import peote.view.PeoteView;
 import peote.view.Color;
 
-// import peote.text.Font;
+import peote.text.Font;
 
 import peote.ui.PeoteUIDisplay;
 import peote.ui.style.RoundBorderStyle;
@@ -30,21 +30,22 @@ class Ui
 		this.onInit = onInit;
 
 		// load font for UI
-		new peote.text.Font<UiFontStyle>("assets/hack_ascii.json").load( onFontLoaded );
+		new Font<UiFontStyle>("assets/hack_ascii.json").load( onFontLoaded );
 	}
 
-	public function onFontLoaded(font:peote.text.Font<UiFontStyle>)
+	public function onFontLoaded(font:Font<UiFontStyle>)
 	{
 		// ---- background layer styles -----
 
-		var roundBorderStyle = RoundBorderStyle.createById(0);
-		roundBorderStyle.borderRadius = 7;
+		var roundStyle = RoundBorderStyle.createById(0);
+		roundStyle.borderRadius = 7;
 		
 		var boxStyle  = BoxStyle.createById(0);
 		var selectionStyle = BoxStyle.createById(1, Color.GREY3);
 		var cursorStyle = BoxStyle.createById(2, 0xaa2211ff);
 
 		var fontStyle = new UiFontStyle();
+		fontStyle.color = 0xc0f232ff;
 		
 		
 		// -------------------------------------------------------
@@ -52,7 +53,7 @@ class Ui
 		// -------------------------------------------------------
 		
 		peoteUiDisplay = new PeoteUIDisplay(0, 0, peoteView.width, peoteView.height,
-			[ boxStyle, roundBorderStyle, selectionStyle, fontStyle, cursorStyle ]
+			[ boxStyle, roundStyle, selectionStyle, fontStyle, cursorStyle ]
 		);
 		peoteView.addDisplay(peoteUiDisplay);
 		
@@ -76,31 +77,31 @@ class Ui
 		// --------- main area ------------
 		// --------------------------------
 		
-		var textConfig:TextConfig = {
-			backgroundStyle:roundBorderStyle.copy(Color.GREY5),
-			selectionStyle: selectionStyle,
-			cursorStyle: cursorStyle,
-			textSpace: { left:3, right:1, top:1, bottom:1 },
-			undoBufferSize:100
-		}
-					
+
+		widthBeforeOverflow = Std.int( Math.max( Math.min( peoteView.width / 3, 500 ), 200));
+		mainArea_oldHeight = heightBeforeOverflow = Std.int( Math.max( Math.min( peoteView.height * 0.75, 500 ), 200));
+
 		mainArea = new UiMainArea(
-			500, 0, 300, 400, 0,
-				font,
-				fontStyle,
-				// boxStyle,
-				textConfig,
-				{backgroundStyle:roundBorderStyle, resizeType:ResizeType.LEFT|ResizeType.BOTTOM|ResizeType.BOTTOM_LEFT, minWidth:200, minHeight:100}
+			peoteView.width - widthBeforeOverflow, 0,
+			widthBeforeOverflow, 400,
+			font,
+			fontStyle,
+			boxStyle,
+			roundStyle,
+			selectionStyle,
+			cursorStyle,
+			{ backgroundStyle:roundStyle.copy(0x00002266), resizeType:ResizeType.LEFT|ResizeType.BOTTOM|ResizeType.BOTTOM_LEFT, minWidth:200, minHeight:200 }
 		);	
 		peoteUiDisplay.add(mainArea);
+		mainArea.updateLayout(); // is need for inner UIAreas
 
 		// ------------------------------------
 		// ---- slider to scroll main area ----		
 		// ------------------------------------
 		/*		
 		mainSlider = new UISlider(mainArea.right, mainArea.top, 20, mainArea.height, {
-			backgroundStyle: roundBorderStyle.copy(Color.GREY2),
-			draggerStyle: roundBorderStyle.copy(Color.GREY3, Color.GREY2, 0.5),
+			backgroundStyle: roundStyle.copy(Color.GREY2),
+			draggerStyle: roundStyle.copy(Color.GREY3, Color.GREY2, 0.5),
 			draggerSize:14,
 			draggSpace:1,
 		});
@@ -126,10 +127,10 @@ class Ui
 	// -------------- RESIZING ------------------------ 
 	// ------------------------------------------------	
 	var widthIsOverflow = false;
-	var widthBeforeOverflow:Int = 0;
+	var widthBeforeOverflow:Int;
 	var heightIsOverflow = false;
-	var heightBeforeOverflow:Int = 0;
-	var mainArea_oldHeight:Int = 0;
+	var heightBeforeOverflow:Int;
+	var mainArea_oldHeight:Int;
 
 	public function resize(width:Int, height:Int) {
 		peoteUiDisplay.width = width;
