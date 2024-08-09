@@ -3,6 +3,7 @@ package ui;
 import peote.text.Font;
 
 import peote.view.Color;
+import peote.view.UniformFloat;
 
 import peote.ui.interactive.UITextLine;
 import peote.ui.interactive.UIArea;
@@ -21,13 +22,17 @@ import peote.ui.interactive.interfaces.ParentElement;
 
 class UiMainArea extends UIArea implements ParentElement
 {
+	var uniformFloats:Array<UniformFloat>;
+
 	public var formulaInput:UITextLine<UiFontStyle>;
 	public var sequenceInput:UITextLine<UiFontStyle>;
 
 	public var paramArea:UiParamArea;
 
 
-	public function new(xPosition:Int, yPosition:Int, width:Int, height:Int, zIndex:Int = 0,
+	public function new(
+		uniformFloats:Array<UniformFloat>,
+		xPosition:Int, yPosition:Int, width:Int, height:Int, zIndex:Int = 0,
 		font:Font<UiFontStyle>,
 		fontStyle:UiFontStyle,
 		boxStyle:BoxStyle,
@@ -37,6 +42,7 @@ class UiMainArea extends UIArea implements ParentElement
 		?config:AreaConfig
 	) 
 	{
+		this.uniformFloats = uniformFloats;
 		super(xPosition, yPosition, width, height, zIndex, config);
 		
 		// -----------------------------------------------------------
@@ -135,7 +141,10 @@ class UiMainArea extends UIArea implements ParentElement
 			cursorStyle,
 			{ backgroundStyle:roundStyle.copy(0x11150fbb, 0xddff2205) }
 			// { backgroundStyle:null }
-		);	
+		);
+		paramArea.onChange = (v:Float) -> {
+			uniformFloats[0].value = v;
+		};
 		add(paramArea);
 
 

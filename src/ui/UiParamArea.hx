@@ -30,6 +30,7 @@ class UiParamArea extends UIArea implements ParentElement
 	public var endInput:UITextLine<UiFontStyle>;
 	public var slider:UISlider;
 
+	public var onChange:Float->Void;
 
 	public function new(
 		label:String,
@@ -112,7 +113,7 @@ class UiParamArea extends UIArea implements ParentElement
 		valueInput = new UITextLine<UiFontStyle>(labelWidth + gap, 0,
 			width - labelWidth - gap,
 			Std.int(fontStyle.height),
-			"3.14",
+			"1",
 			font, fontStyle, textConfig
 		);
 		
@@ -143,9 +144,9 @@ class UiParamArea extends UIArea implements ParentElement
 			
 			//vertical:true,
 			//reverse:true,
-			//value: -2,
+			value: 1,
 			valueStart: 1,
-			valueEnd: 100,
+			valueEnd: 25,
 			
 			//draggerSpace:{left:15, right:15},
 			//backgroundSpace:{left:50},
@@ -175,9 +176,10 @@ class UiParamArea extends UIArea implements ParentElement
 			s.setWheelDelta(e.deltaY);
 		}
 		slider.onChange = function(s:UISlider, value:Float, percent:Float) {
-			trace( 'slider value:$value, percent:$percent' );
+			// trace( 'slider value:$value, percent:$percent' );
 			valueInput.setText(('$value':String), null, null, false);
 			valueInput.update();
+			onChange(value);
 		}
 		add(slider);
 		
@@ -213,8 +215,5 @@ class UiParamArea extends UIArea implements ParentElement
 
 	}	
 
-	
-	// TODO
-	public function setParams() {
-	}
+
 }

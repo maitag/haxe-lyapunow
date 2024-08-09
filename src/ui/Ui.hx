@@ -2,6 +2,7 @@ package ui;
 
 import peote.view.PeoteView;
 import peote.view.Color;
+import peote.view.UniformFloat;
 
 import peote.text.Font;
 
@@ -24,9 +25,12 @@ class Ui
 	var mainArea:UiMainArea;
 	var mainSlider:UISlider;
 
-	public function new(peoteView:PeoteView, onInit:Void->Void)
+	var uniformFloats:Array<UniformFloat>;
+
+	public function new(peoteView:PeoteView, uniformFloats:Array<UniformFloat>, onInit:Void->Void)
 	{
 		this.peoteView = peoteView;
+		this.uniformFloats = uniformFloats;
 		this.onInit = onInit;
 
 		// load font for UI
@@ -82,6 +86,7 @@ class Ui
 		mainArea_oldHeight = heightBeforeOverflow = Std.int( Math.max( Math.min( peoteView.height * 0.75, 500 ), 200));
 
 		mainArea = new UiMainArea(
+			uniformFloats,
 			peoteView.width - widthBeforeOverflow, 0,
 			widthBeforeOverflow, 400,
 			font,

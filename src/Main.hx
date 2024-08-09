@@ -12,6 +12,9 @@ import peote.view.Buffer;
 import peote.view.Element;
 import peote.view.Color;
 
+import peote.view.UniformFloat;
+
+
 import ui.Ui;
 
 class Main extends Application
@@ -19,6 +22,8 @@ class Main extends Application
 	var peoteView:PeoteView;
 	var lyapunowDisplay:Display;
 	var ui:Ui;
+
+	var uniformFloats = new Array<UniformFloat>();
 	
 	override function onWindowCreate():Void
 	{
@@ -37,7 +42,11 @@ class Main extends Application
 		lyapunowDisplay = new Display(0, 0, window.width, window.height);
 		peoteView.addDisplay(lyapunowDisplay);
 
-		ui = new Ui(peoteView, onUIInit);
+
+		
+		uniformFloats.push( new UniformFloat("uIterMain", 3.0) );
+
+		ui = new Ui(peoteView, uniformFloats, onUIInit);
 		
 	}
 	
@@ -46,7 +55,10 @@ class Main extends Application
 		trace("onUiInit");
 
 
-		Lyapunow.init(lyapunowDisplay);
+		Lyapunow.init(lyapunowDisplay, uniformFloats);
+
+		// init uniforms
+		// linesize = new UniformFloat("linesize", 0.1);
 	}	
 
 	// ------------------------------------------------------------

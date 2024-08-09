@@ -20,7 +20,7 @@ class Lyapunow implements Element
 	static public var buffer:Buffer<Lyapunow>;
 	static public var program:Program;	
 	
-	static public function init(display:Display)
+	static public function init(display:Display, uniformFloats:Array<UniformFloat>)
 	{	
 		buffer = new Buffer<Lyapunow>(1);
 		program = new Program(buffer);
@@ -60,7 +60,7 @@ class Lyapunow implements Element
 				vec2 uPosition = vec2(0.0, 0.0);
 				vec2 uScale = vec2(800.0/vSize.x, 800.0/vSize.y);
 				vec2 uParam = vec2(2.5, 2.0);
-				vec2 uIteration = vec2(0.0, 5.0);
+				float uIterPre = 0.0;
 				float uBalance = 0.5;
 				vec3 uColpos = vec3(1.0, 0.0, 0.0);
 				vec3 uColmid = vec3(0.0, 0.0, 0.0);
@@ -73,13 +73,13 @@ class Lyapunow implements Element
 				float p1 = uParam.x;
 				float p2 = uParam.y;
 				
-				int iter_pre =  int(floor(uIteration.x));
-				int iter_main = int(floor(uIteration.y));
-				float iter_main_full = floor(uIteration.y) * 2.0; // todo, the 2.0 is generated in depend of how long the sequence is !
+				int iter_pre =  int(floor(uIterPre));
+				int iter_main = int(floor(uIterMain));
+				float iter_main_full = floor(uIterMain) * 2.0; // todo, the 2.0 is generated in depend of how long the sequence is !
 				if (iter_main_full == 0.0) iter_main_full = 1.175494351e-38;
 
-				float nabla_pre = uIteration.x - float(iter_pre);
-				float nabla_main = uIteration.y - float(iter_main);
+				float nabla_pre = uIterPre - float(iter_pre);
+				float nabla_main = uIterMain - float(iter_main);
 				
 				float index = 0.0;
 				
@@ -122,6 +122,7 @@ class Lyapunow implements Element
 			}			
 		"
 		, false // inject uTime
+		, uniformFloats
 		);
 		
 		program.setColorFormula( 'lyapunow()' );
