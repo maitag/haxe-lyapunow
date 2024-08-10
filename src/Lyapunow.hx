@@ -114,7 +114,7 @@ class Lyapunow implements Element
 
 					main_step(index, i, xy, p1, p2, uBalance);
 
-					index = index/iter_main_full;
+					index = index/(iter_main_full + 2.0); // todo, the 2.0 is generated in depend of how long the sequence is !
 					index = index*nabla_main + index_pre*(1.0-nabla_main);
 				}
 

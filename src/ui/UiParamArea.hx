@@ -34,63 +34,92 @@ class UiParamArea extends UIArea implements ParentElement
 
 	public function new(
 		label:String,
+		value:Float,
+		valueStart:Float,
+		valueEnd:Float,
 		labelWidth:Int,
 		xPosition:Int, yPosition:Int, width:Int, height:Int, zIndex:Int = 0,
-		font:Font<UiFontStyle>,
-		fontStyle:UiFontStyle,
-		boxStyle:BoxStyle,
-		roundStyle:RoundBorderStyle,
-		selectionStyle: Style,
-		cursorStyle: Style,
 		?config:AreaConfig
-	) 
+	)
 	{
 		super(xPosition, yPosition, width, height, zIndex, config);
 		
 		var gap:Int = 4;
 
 		var labelTextConfig:TextConfig = {
-			// backgroundStyle:roundStyle.copy(0x55000032, 0xddff2255),
-			backgroundStyle:roundStyle.copy(0x11150fbb, 0x11150fbb),
-			// selectionStyle: selectionStyle,
-			// cursorStyle: cursorStyle,
-			textSpace: { left:5, right:5, top:1, bottom:1 },
-			undoBufferSize:100
+			backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0x11150fbb),
+			textSpace: { left:5, top:2, bottom:1 }
 		}
 		
 		// --------------------------
 		// ----- label textline -----
 		// --------------------------
-		var fontStyleLabel = fontStyle.copy(Color.GREEN3);
-		labelText = new UITextLine<UiFontStyle>(0, 0, labelWidth, Std.int(fontStyle.height),
-			// "main iteration", font, fontStyleLabel, { backgroundStyle:roundStyle.copy(Color.GREY1, Color.GREY1), hAlign:HAlign.LEFT, vAlign:VAlign.CENTER, textSpace:{left:4} }
-			label, font, fontStyleLabel, labelTextConfig
+		var fontStyleLabel = Ui.fontStyle.copy(Color.GREEN3);
+		labelText = new UITextLine<UiFontStyle>(0, 0,
+			labelWidth, Std.int(Ui.fontStyle.height) + labelTextConfig.textSpace.top + labelTextConfig.textSpace.top,
+			label, Ui.font, fontStyleLabel, labelTextConfig
 		);
 		// start/stop area-dragging
 		labelText.onPointerDown = (_, e:PointerEvent)-> {trace("switch");};
 		add(labelText);
 		
-
+		// -----------------------------------------------------
 		// ------------ PARAMETERS -----------------------------
+		// -----------------------------------------------------
 		
-		var textConfig:TextConfig = {
-			// backgroundStyle:roundStyle.copy(0x55000032, 0xddff2255),
-			backgroundStyle:roundStyle.copy(0x00000055, 0x33332255), //roundStyle.copy(0x11150fbb, 0xddff2205),
-			selectionStyle: selectionStyle,
-			cursorStyle: cursorStyle,
-			textSpace: { left:5, right:5, top:1, bottom:1 },
-			undoBufferSize:100
+		var paramTextConfig:TextConfig = {
+			backgroundStyle:Ui.roundStyle.copy(0x00000055, 0x33332255),
+			selectionStyle: Ui.selectionStyle,
+			cursorStyle: Ui.cursorStyle,
+			textSpace: { left:5, right:5, top:2, bottom:1 },
+			undoBufferSize:30
 		}
 		
 		// ---------------------------
 		// --------  values ----------
 		// ---------------------------
 		
+		valueInput = new UITextLine<UiFontStyle>(labelWidth + gap, 0,
+			width - labelWidth - gap,
+			Std.int(Ui.fontStyle.height) + paramTextConfig.textSpace.top + paramTextConfig.textSpace.top,
+			('$value':String),
+			Ui.font, Ui.fontStyle, paramTextConfig
+		);
+		
+		valueInput.onPointerDown = function(t, e) {
+			t.setInputFocus(e);			
+			t.startSelection(e);
+		}
+		
+		valueInput.onPointerUp = function(t, e) {
+			t.stopSelection(e);
+		}
+		
+		valueInput.onInsertText = valueInput.onDeleteText = function(t, from:Int, to:Int, s:String) {
+			var v:Float = Std.parseFloat(valueInput.text);
+			if (v < slider.valueStart) {
+				slider.setValue( slider.valueStart, false);
+				onChange(slider.valueStart);
+			}
+			else if (v > slider.valueEnd ) {
+				slider.setValue(slider.valueEnd, false);
+				onChange(slider.valueEnd);
+			}
+			else if (!Math.isNaN(v)) {
+				slider.setValue(v, false);
+				onChange(v);
+			}
+		}
+		
+		add(valueInput);
+
+		// --------------valueStart --------------------
+
 		startInput = new UITextLine<UiFontStyle>(labelWidth + gap, 0,
 			width - labelWidth - gap,
-			Std.int(fontStyle.height),
-			"3.14",
-			font, fontStyle, textConfig
+			Std.int(Ui.fontStyle.height) + paramTextConfig.textSpace.top + paramTextConfig.textSpace.top,
+			('$valueStart':String),
+			Ui.font, Ui.fontStyle, paramTextConfig
 		);
 		
 		startInput.onPointerDown = function(t, e) {
@@ -107,31 +136,6 @@ class UiParamArea extends UIArea implements ParentElement
 		}
 		// add(startInput);
 		
-		
-		// ---------------------------
-		
-		valueInput = new UITextLine<UiFontStyle>(labelWidth + gap, 0,
-			width - labelWidth - gap,
-			Std.int(fontStyle.height),
-			"1",
-			font, fontStyle, textConfig
-		);
-		
-		valueInput.onPointerDown = function(t, e) {
-			t.setInputFocus(e);			
-			t.startSelection(e);
-		}
-		
-		valueInput.onPointerUp = function(t, e) {
-			t.stopSelection(e);
-		}
-		
-		valueInput.onInsertText = valueInput.onDeleteText = function(t, from:Int, to:Int, s:String) {
-			var v:Float = Std.parseFloat(valueInput.text);
-			if (v >= slider.valueStart && v <= slider.valueEnd ) slider.setValue(v, false);
-		}
-		
-		add(valueInput);
 
 
 		// ---------------------------
@@ -140,13 +144,13 @@ class UiParamArea extends UIArea implements ParentElement
 		
 		var sliderConfig:SliderConfig = {
 			// backgroundStyle: roundStyle,
-			draggerStyle: roundStyle.copy(0xbbdd22bb),
+			draggerStyle: Ui.roundStyle.copy(0xbbdd22bb),
 			
 			//vertical:true,
 			//reverse:true,
-			value: 1,
-			valueStart: 1,
-			valueEnd: 25,
+			value: value,
+			valueStart: valueStart,
+			valueEnd: valueEnd,
 			
 			//draggerSpace:{left:15, right:15},
 			//backgroundSpace:{left:50},
@@ -167,7 +171,7 @@ class UiParamArea extends UIArea implements ParentElement
 			draggSpaceEnd:2,
 		};
 		
-		slider = new UISlider(0, Std.int(fontStyle.height), width, height-Std.int(fontStyle.height), sliderConfig);
+		slider = new UISlider(0, Std.int(Ui.fontStyle.height), width, height-Std.int(Ui.fontStyle.height), sliderConfig);
 		//slider.valueStart = -5;
 		//slider.valueEnd = 10;
 		slider.onMouseWheel = function(s:UISlider, e:WheelEvent) {
@@ -177,8 +181,9 @@ class UiParamArea extends UIArea implements ParentElement
 		}
 		slider.onChange = function(s:UISlider, value:Float, percent:Float) {
 			// trace( 'slider value:$value, percent:$percent' );
-			valueInput.setText(('$value':String), null, null, false);
-			valueInput.update();
+			valueInput.setText(('$value':String));
+			valueInput.xOffset = 0;
+			valueInput.updateVisibleLayout();
 			onChange(value);
 		}
 		add(slider);

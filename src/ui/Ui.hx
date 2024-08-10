@@ -18,6 +18,17 @@ import peote.ui.config.ResizeType;
 
 class Ui
 {
+	// statics
+	public static var font:Font<UiFontStyle>;
+	public static var fontStyle = new UiFontStyle();
+
+	public static var roundStyle = RoundBorderStyle.createById(0);
+	public static var boxStyle  = BoxStyle.createById(0);
+	public static var selectionStyle = BoxStyle.createById(1, Color.GREY3);
+	public static var cursorStyle = BoxStyle.createById(2, 0xaa2211ff);
+
+
+
 	var peoteView:PeoteView;
 	var peoteUiDisplay:PeoteUIDisplay;
 	var onInit:Void->Void;
@@ -39,17 +50,12 @@ class Ui
 
 	public function onFontLoaded(font:Font<UiFontStyle>)
 	{
-		// ---- background layer styles -----
+		Ui.font = font;
 
-		var roundStyle = RoundBorderStyle.createById(0);
-		roundStyle.borderRadius = 7;
+		// ---- layer styles props -----
 		
-		var boxStyle  = BoxStyle.createById(0);
-		var selectionStyle = BoxStyle.createById(1, Color.GREY3);
-		var cursorStyle = BoxStyle.createById(2, 0xaa2211ff);
-
-		var fontStyle = new UiFontStyle();
 		fontStyle.color = 0xc0f232ff;
+		roundStyle.borderRadius = 7;
 		
 		
 		// -------------------------------------------------------
@@ -89,12 +95,6 @@ class Ui
 			uniformFloats,
 			peoteView.width - widthBeforeOverflow, 0,
 			widthBeforeOverflow, 400,
-			font,
-			fontStyle,
-			boxStyle,
-			roundStyle,
-			selectionStyle,
-			cursorStyle,
 			{ backgroundStyle:roundStyle.copy(0x00002266), resizeType:ResizeType.LEFT|ResizeType.BOTTOM|ResizeType.BOTTOM_LEFT, minWidth:200, minHeight:200 }
 		);	
 		peoteUiDisplay.add(mainArea);
