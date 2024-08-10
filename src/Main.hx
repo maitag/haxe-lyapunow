@@ -44,9 +44,12 @@ class Main extends Application
 
 
 		
+		uniformFloats.push( new UniformFloat("uIterPre", 0.0) );
 		uniformFloats.push( new UniformFloat("uIterMain", 3.0) );
+		uniformFloats.push( new UniformFloat("uStartIndex", 0.0) );
+		uniformFloats.push( new UniformFloat("uBalance", 0.5) );
 
-		ui = new Ui(peoteView, uniformFloats, onUIInit);
+		ui = new Ui(peoteView, uniformFloats, "2.5*sin(i+n)^2+3", "xy", onUIInit);
 		
 	}
 	
@@ -64,6 +67,16 @@ class Main extends Application
 	// ------------------------------------------------------------
 	// ----------------- LIME EVENTS ------------------------------
 	// ------------------------------------------------------------	
+
+	override function update(deltaTime:Int):Void {
+		if (Ui.formulaChanged) {
+			Ui.formulaChanged = false;
+			
+
+			trace("update:", Ui.formula, Ui.sequence);
+		}
+	}
+
 	// override function onMouseMove (x:Float, y:Float):Void {}
 
 	// override function onMouseDown (x:Float, y:Float, button:lime.ui.MouseButton):Void {}

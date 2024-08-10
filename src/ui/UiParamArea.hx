@@ -37,26 +37,26 @@ class UiParamArea extends UIArea implements ParentElement
 		value:Float,
 		valueStart:Float,
 		valueEnd:Float,
-		labelWidth:Int,
 		xPosition:Int, yPosition:Int, width:Int, height:Int, zIndex:Int = 0,
 		?config:AreaConfig
 	)
 	{
 		super(xPosition, yPosition, width, height, zIndex, config);
 		
-		var gap:Int = 4;
-
+		var labelWidth:Int = 120;
+		
 		var labelTextConfig:TextConfig = {
-			backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0x11150fbb),
-			textSpace: { left:5, top:2, bottom:1 }
+			backgroundStyle:Ui.roundStyle.copy(0x11150f44, null, 0.0),
+			textSpace: { left:5, right:5, top:1, bottom:1 }
 		}
 		
 		// --------------------------
 		// ----- label textline -----
 		// --------------------------
-		var fontStyleLabel = Ui.fontStyle.copy(Color.GREEN3);
-		labelText = new UITextLine<UiFontStyle>(0, 0,
-			labelWidth, Std.int(Ui.fontStyle.height) + labelTextConfig.textSpace.top + labelTextConfig.textSpace.top,
+		var fontStyleLabel = Ui.fontStyle.copy(0x55f011ff);
+		labelText = new UITextLine<UiFontStyle>(1, 1,
+			0,
+			Std.int(Ui.fontStyle.height) + labelTextConfig.textSpace.top + labelTextConfig.textSpace.bottom,
 			label, Ui.font, fontStyleLabel, labelTextConfig
 		);
 		// start/stop area-dragging
@@ -64,24 +64,22 @@ class UiParamArea extends UIArea implements ParentElement
 		add(labelText);
 		
 		// -----------------------------------------------------
-		// ------------ PARAMETERS -----------------------------
+		// ------------ number input ---------------------------
 		// -----------------------------------------------------
 		
 		var paramTextConfig:TextConfig = {
-			backgroundStyle:Ui.roundStyle.copy(0x00000055, 0x33332255),
+			backgroundStyle:Ui.roundStyle.copy(0x00000044, null, 0.0),
 			selectionStyle: Ui.selectionStyle,
 			cursorStyle: Ui.cursorStyle,
-			textSpace: { left:5, right:5, top:2, bottom:1 },
+			textSpace: { left:5, right:5, top:1, bottom:1 },
 			undoBufferSize:30
 		}
 		
-		// ---------------------------
-		// --------  values ----------
-		// ---------------------------
+		// --------  value ----------
 		
-		valueInput = new UITextLine<UiFontStyle>(labelWidth + gap, 0,
-			width - labelWidth - gap,
-			Std.int(Ui.fontStyle.height) + paramTextConfig.textSpace.top + paramTextConfig.textSpace.top,
+		valueInput = new UITextLine<UiFontStyle>(labelWidth, 1,
+			width - labelWidth - 1,
+			Std.int(Ui.fontStyle.height) + paramTextConfig.textSpace.top + paramTextConfig.textSpace.bottom,
 			('$value':String),
 			Ui.font, Ui.fontStyle, paramTextConfig
 		);
@@ -115,9 +113,9 @@ class UiParamArea extends UIArea implements ParentElement
 
 		// --------------valueStart --------------------
 
-		startInput = new UITextLine<UiFontStyle>(labelWidth + gap, 0,
-			width - labelWidth - gap,
-			Std.int(Ui.fontStyle.height) + paramTextConfig.textSpace.top + paramTextConfig.textSpace.top,
+		startInput = new UITextLine<UiFontStyle>(labelWidth, 1,
+			width - labelWidth - 1,
+			Std.int(Ui.fontStyle.height) + paramTextConfig.textSpace.top + paramTextConfig.textSpace.bottom,
 			('$valueStart':String),
 			Ui.font, Ui.fontStyle, paramTextConfig
 		);
@@ -162,22 +160,22 @@ class UiParamArea extends UIArea implements ParentElement
 			draggerLengthPercent:0.1,
 			
 			draggerSize:20,
-			draggerSizePercent:0.75,
+			// draggerSizePercent:0.75,
 			
 			//draggerOffset:0,
 			// draggerOffsetPercent:0.5,
 			
-			draggSpaceStart:2,
-			draggSpaceEnd:2,
+			draggSpaceStart:0,
+			draggSpaceEnd:0,
 		};
 		
-		slider = new UISlider(0, Std.int(Ui.fontStyle.height), width, height-Std.int(Ui.fontStyle.height), sliderConfig);
+		slider = new UISlider(1, Std.int(Ui.fontStyle.height), width - 1, height-Std.int(Ui.fontStyle.height), sliderConfig);
 		//slider.valueStart = -5;
 		//slider.valueEnd = 10;
 		slider.onMouseWheel = function(s:UISlider, e:WheelEvent) {
 			//s.value += e.deltaY * 0.1;
 			//s.setValue (s.value - e.deltaY * 0.05);
-			s.setWheelDelta(e.deltaY);
+			s.setWheelDelta(1.0 - e.deltaY);
 		}
 		slider.onChange = function(s:UISlider, value:Float, percent:Float) {
 			// trace( 'slider value:$value, percent:$percent' );
@@ -207,10 +205,10 @@ class UiParamArea extends UIArea implements ParentElement
 		
 		// TODO: outside ?
 		onResizeWidth = (_, width:Int, deltaWidth:Int) -> {
-			startInput.width = width - labelWidth - gap;
-			valueInput.width = width - labelWidth - gap;
+			startInput.width = width - labelWidth - 1;
+			valueInput.width = width - labelWidth - 1;
 
-			slider.width = width;
+			slider.width = width - 2;
 		}
 
 		onResizeHeight = (_, height:Int, deltaHeight:Int) -> {

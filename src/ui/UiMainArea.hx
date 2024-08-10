@@ -28,7 +28,9 @@ class UiMainArea extends UIArea implements ParentElement
 	public var sequenceInput:UITextLine<UiFontStyle>;
 
 	public var iterMainArea:UiParamArea;
-
+	public var iterPreArea:UiParamArea;
+	public var startIndexArea:UiParamArea;
+	public var balanceArea:UiParamArea;
 
 	public function new(
 		uniformFloats:Array<UniformFloat>,
@@ -43,7 +45,9 @@ class UiMainArea extends UIArea implements ParentElement
 		// ---- creating an Area, header and Content-Area ------------
 		// -----------------------------------------------------------
 		
-		var headerSize:Int = 20;
+		var leftSpace:Int = 4;
+		var rightSpace:Int = 4;
+		var topSpace:Int = 2;
 		var gap:Int = 4;		
 		
 		var textConfig:TextConfig = {
@@ -71,68 +75,105 @@ class UiMainArea extends UIArea implements ParentElement
 		// ------- formula --------
 		// --------------------------
 		
-		formulaInput = new UITextLine<UiFontStyle>(gap, gap + 1,
-			width - gap - gap - 1,
+		formulaInput = new UITextLine<UiFontStyle>(leftSpace, topSpace,
+			width - leftSpace - rightSpace,
 			Std.int(Ui.fontStyle.height) + textConfig.textSpace.top + textConfig.textSpace.bottom,
-			"2.5*sin(i+n)^2+3",
+			Ui.formula,
 			Ui.font, Ui.fontStyle, textConfig
 		);
-		
 		formulaInput.onPointerDown = function(t, e) {
 			t.setInputFocus(e);			
 			t.startSelection(e);
 		}
-		
 		formulaInput.onPointerUp = function(t, e) {
 			t.stopSelection(e);
 		}
-		add(formulaInput);
-		
 		formulaInput.onInsertText = formulaInput.onDeleteText = function(t, from:Int, to:Int, value:String) {
 			trace("formula on change",from, to, value);
+			Ui.formula = t.text;
+			Ui.formulaChanged = true;
 		}
+		add(formulaInput);
 		
 		// --------------------------
-		// ------- sequence --------
+		// ------- sequence ---------
 		// --------------------------
 		
-		sequenceInput = new UITextLine<UiFontStyle>(gap, formulaInput.bottom + gap + 1,
-			width - gap - gap - 1,
+		sequenceInput = new UITextLine<UiFontStyle>(leftSpace, formulaInput.bottom + gap,
+			width - leftSpace - rightSpace,
 			Std.int(Ui.fontStyle.height) + textConfig.textSpace.top + textConfig.textSpace.bottom,
-			"xy",
+			Ui.sequence,
 			Ui.font, Ui.fontStyle, textConfig
-		);
-		
+		);		
 		sequenceInput.onPointerDown = function(t, e) {
 			t.setInputFocus(e);			
 			t.startSelection(e);
-		}
-		
+		}		
 		sequenceInput.onPointerUp = function(t, e) {
 			t.stopSelection(e);
+		}
+		sequenceInput.onInsertText = sequenceInput.onDeleteText = function(t, from:Int, to:Int, value:String) {
+			trace("sequenceInput on change",from, to, value);
+			Ui.sequence = t.text;
+			Ui.formulaChanged = true;
 		}
 		add(sequenceInput);
 		
 		// sequenceInput.onChange
 
 
-		// --------------------------
-		// ------- parameter --------
-		// --------------------------
+		// -------------------------------------
+		// ------- areas for parameters --------
+		// -------------------------------------
 
-		var sliderHeight:Int = 26;
+		var paramAreaHeight:Int = Std.int(Ui.fontStyle.height) + 24;
+		var paramAreaWidth:Int = width - leftSpace - rightSpace;
+		var _y:Int = sequenceInput.bottom + gap;
 
-		iterMainArea = new UiParamArea( "Main Iteration:", 3.0, 1.0, 4.0,
-			120,
-			gap, sequenceInput.bottom + gap,
-			width - gap - gap, Std.int(Ui.fontStyle.height) + sliderHeight,
+		iterPreArea = new UiParamArea( "Pre Iteration:", 0.0, 0.0, 20.0,
+			leftSpace, _y, paramAreaWidth, paramAreaHeight,
 			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
-			// { backgroundStyle:null }
 		);
-		iterMainArea.onChange = (v:Float) -> {
+		iterPreArea.onChange = (v:Float) -> {
 			uniformFloats[0].value = v;
 		};
+		add(iterPreArea);
+
+		// -------------------------------------
+		_y += paramAreaHeight + gap;
+
+		iterMainArea = new UiParamArea( "Main Iteration:", 3.0, 1.0, 100.0,
+			leftSpace, _y, paramAreaWidth, paramAreaHeight,
+			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
+		);
+		iterMainArea.onChange = (v:Float) -> {
+			uniformFloats[1].value = v;
+		};
 		add(iterMainArea);
+
+		// -------------------------------------
+		_y += paramAreaHeight + gap;
+
+		startIndexArea = new UiParamArea( "Start Index:", 0.0, -10.0, 10.0,
+			leftSpace, _y, paramAreaWidth, paramAreaHeight,
+			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
+		);
+		startIndexArea.onChange = (v:Float) -> {
+			uniformFloats[2].value = v;
+		};
+		add(startIndexArea);
+
+		// -------------------------------------
+		_y += paramAreaHeight + gap;
+
+		balanceArea = new UiParamArea( "Balance:", 1.0, -1.0, 3.0,
+			leftSpace, _y, paramAreaWidth, paramAreaHeight,
+			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
+		);
+		balanceArea.onChange = (v:Float) -> {
+			uniformFloats[3].value = v;
+		};
+		add(balanceArea);
 
 
 		
@@ -141,9 +182,10 @@ class UiMainArea extends UIArea implements ParentElement
 		
 		// TODO: outside ?
 		onResizeWidth = (_, width:Int, deltaWidth:Int) -> {
-			formulaInput.width = width - gap - gap - 1;
-			sequenceInput.width = formulaInput.width;
-			iterMainArea.width = formulaInput.width;
+			formulaInput.width = 
+			sequenceInput.width =
+			iterPreArea.width =
+			iterMainArea.width = width - leftSpace - rightSpace;
 		}
 
 		onResizeHeight = (_, height:Int, deltaHeight:Int) -> {

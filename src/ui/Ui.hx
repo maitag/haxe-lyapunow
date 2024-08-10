@@ -18,7 +18,12 @@ import peote.ui.config.ResizeType;
 
 class Ui
 {
-	// statics
+	// statics callbacks
+	public static var formula:String;
+	public static var sequence:String;
+	public static var formulaChanged = true;
+	
+	// statics into style
 	public static var font:Font<UiFontStyle>;
 	public static var fontStyle = new UiFontStyle();
 
@@ -38,10 +43,12 @@ class Ui
 
 	var uniformFloats:Array<UniformFloat>;
 
-	public function new(peoteView:PeoteView, uniformFloats:Array<UniformFloat>, onInit:Void->Void)
+	public function new(peoteView:PeoteView, uniformFloats:Array<UniformFloat>, formula:String, sequence:String, onInit:Void->Void)
 	{
 		this.peoteView = peoteView;
 		this.uniformFloats = uniformFloats;
+		Ui.formula = formula;
+		Ui.sequence = sequence;
 		this.onInit = onInit;
 
 		// load font for UI

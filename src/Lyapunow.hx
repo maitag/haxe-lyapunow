@@ -45,30 +45,28 @@ class Lyapunow implements Element
 				i = func(i,xy.y,p1,p2);
 			}
 
-			void main_step(inout float index, inout float i, vec2 xy, float p1, float p2, float balance)
+			void main_step(inout float index, inout float i, vec2 xy, float p1, float p2)
 			{
 				i = func(i,xy.x,p1,p2);
-				index += (  log(abs(deriv(i,xy.x,p1,p2)))*balance + deriv(i,xy.x,p1,p2)*(1.0-balance)  ) / 2.0;
+				index += (  log(abs(deriv(i,xy.x,p1,p2)))*uBalance + deriv(i,xy.x,p1,p2)*(1.0-uBalance)  ) / 2.0;
 				i = func(i,xy.y,p1,p2);
-				index += (  log(abs(deriv(i,xy.y,p1,p2)))*balance + deriv(i,xy.y,p1,p2)*(1.0-balance)  ) / 2.0;
+				index += (  log(abs(deriv(i,xy.y,p1,p2)))*uBalance + deriv(i,xy.y,p1,p2)*(1.0-uBalance)  ) / 2.0;
 				// iter = iter + 2;
 			}
 
 			vec4 lyapunow()
 			{
-				float uStart = 0.0;
 				vec2 uPosition = vec2(0.0, 0.0);
 				vec2 uScale = vec2(800.0/vSize.x, 800.0/vSize.y);
 				vec2 uParam = vec2(2.5, 2.0);
-				float uIterPre = 0.0;
-				float uBalance = 0.5;
+				
 				vec3 uColpos = vec3(1.0, 0.0, 0.0);
 				vec3 uColmid = vec3(0.0, 0.0, 0.0);
 				vec3 uColneg = vec3(0.0, 0.0, 1.0);
 
 
 				// Parameter
-				float i = uStart;
+				float i = uStartIndex;
 				vec2 xy = (vTexCoord - uPosition) / uScale;
 				float p1 = uParam.x;
 				float p2 = uParam.y;
@@ -102,7 +100,7 @@ class Lyapunow implements Element
 				for (int iter = 0; iter < 201; iter++) {
 					if (iter < iter_main)
 					{
-						main_step(index, i, xy, p1, p2, uBalance);
+						main_step(index, i, xy, p1, p2);
 					}
 				}
 				
@@ -112,7 +110,7 @@ class Lyapunow implements Element
 				else {
 					float index_pre = index/iter_main_full;
 
-					main_step(index, i, xy, p1, p2, uBalance);
+					main_step(index, i, xy, p1, p2);
 
 					index = index/(iter_main_full + 2.0); // todo, the 2.0 is generated in depend of how long the sequence is !
 					index = index*nabla_main + index_pre*(1.0-nabla_main);
