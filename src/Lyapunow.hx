@@ -1,6 +1,7 @@
 package;
 
 import peote.view.*;
+import Param.DefaultParams;
 
 class Lyapunow implements Element
 {
@@ -13,14 +14,12 @@ class Lyapunow implements Element
 	@sizeY @varying @const @formula("uResolution.y") var h:Int;
 
 	
-
-	
 	// --------------------------------------------------------------------------	
 	
 	static public var buffer:Buffer<Lyapunow>;
 	static public var program:Program;	
 	
-	static public function init(display:Display, uniformFloats:Array<UniformFloat>)
+	static public function init(display:Display, defaultParams:DefaultParams)
 	{	
 		buffer = new Buffer<Lyapunow>(1);
 		program = new Program(buffer);
@@ -120,7 +119,7 @@ class Lyapunow implements Element
 			}			
 		"
 		, false // inject uTime
-		, uniformFloats
+		, defaultParams.uniforms
 		);
 		
 		program.setColorFormula( 'lyapunow()' );

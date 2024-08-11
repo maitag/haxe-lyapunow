@@ -2,19 +2,16 @@ package ui;
 
 import peote.view.PeoteView;
 import peote.view.Color;
-import peote.view.UniformFloat;
 
 import peote.text.Font;
 
 import peote.ui.PeoteUIDisplay;
 import peote.ui.style.RoundBorderStyle;
 import peote.ui.style.BoxStyle;
-
 import peote.ui.interactive.UISlider;
-
-import peote.ui.config.TextConfig;
 import peote.ui.config.ResizeType;
-// import peote.ui.event.*;
+
+import Param.DefaultParams;
 
 class Ui
 {
@@ -33,20 +30,19 @@ class Ui
 	public static var cursorStyle = BoxStyle.createById(2, 0xaa2211ff);
 
 
-
 	var peoteView:PeoteView;
-	var peoteUiDisplay:PeoteUIDisplay;
+	var defaultParams:DefaultParams;
 	var onInit:Void->Void;
+
+	var peoteUiDisplay:PeoteUIDisplay;
 
 	var mainArea:UiMainArea;
 	var mainSlider:UISlider;
 
-	var uniformFloats:Array<UniformFloat>;
-
-	public function new(peoteView:PeoteView, uniformFloats:Array<UniformFloat>, formula:String, sequence:String, onInit:Void->Void)
+	public function new(peoteView:PeoteView, defaultParams:DefaultParams, formula:String, sequence:String, onInit:Void->Void)
 	{
 		this.peoteView = peoteView;
-		this.uniformFloats = uniformFloats;
+		this.defaultParams = defaultParams;
 		Ui.formula = formula;
 		Ui.sequence = sequence;
 		this.onInit = onInit;
@@ -76,17 +72,11 @@ class Ui
 		
 
 
-
-
 		// --------------------------------
 		// ---------- main menu -----------
 		// --------------------------------
 
 		// TODO
-
-
-
-
 
 
 
@@ -99,7 +89,7 @@ class Ui
 		mainArea_oldHeight = heightBeforeOverflow = Std.int( Math.max( Math.min( peoteView.height * 0.75, 500 ), 200));
 
 		mainArea = new UiMainArea(
-			uniformFloats,
+			defaultParams,
 			peoteView.width - widthBeforeOverflow, 0,
 			widthBeforeOverflow, 400,
 			{ backgroundStyle:roundStyle.copy(0x00002266), resizeType:ResizeType.LEFT|ResizeType.BOTTOM|ResizeType.BOTTOM_LEFT, minWidth:200, minHeight:200 }
@@ -107,6 +97,8 @@ class Ui
 		peoteUiDisplay.add(mainArea);
 		mainArea.updateLayout(); // is need for inner UIAreas
 
+
+		
 		// ------------------------------------
 		// ---- slider to scroll main area ----		
 		// ------------------------------------

@@ -1,26 +1,16 @@
 package ui;
 
-import peote.text.Font;
-import peote.view.Color;
-
 import peote.ui.interactive.UITextLine;
 import peote.ui.interactive.UIArea;
 import peote.ui.interactive.UISlider;
-
 import peote.ui.config.TextConfig;
 import peote.ui.config.AreaConfig;
 import peote.ui.config.SliderConfig;
-import peote.ui.config.HAlign;
-import peote.ui.config.VAlign;
-
-import peote.ui.style.interfaces.Style;
-import peote.ui.style.BoxStyle;
-import peote.ui.style.RoundBorderStyle;
-
 import peote.ui.event.PointerEvent;
 import peote.ui.event.WheelEvent;
-
 import peote.ui.interactive.interfaces.ParentElement;
+
+import Param;
 
 class UiParamArea extends UIArea implements ParentElement
 {
@@ -30,17 +20,15 @@ class UiParamArea extends UIArea implements ParentElement
 	public var endInput:UITextLine<UiFontStyle>;
 	public var slider:UISlider;
 
-	public var onChange:Float->Void;
+	public var param:Param;
 
-	public function new(
-		label:String,
-		value:Float,
-		valueStart:Float,
-		valueEnd:Float,
+	public function new( param:Param,
 		xPosition:Int, yPosition:Int, width:Int, height:Int, zIndex:Int = 0,
 		?config:AreaConfig
 	)
 	{
+		this.param = param;
+
 		super(xPosition, yPosition, width, height, zIndex, config);
 		
 		var labelWidth:Int = 120;
@@ -57,7 +45,7 @@ class UiParamArea extends UIArea implements ParentElement
 		labelText = new UITextLine<UiFontStyle>(1, 1,
 			0,
 			Std.int(Ui.fontStyle.height) + labelTextConfig.textSpace.top + labelTextConfig.textSpace.bottom,
-			label, Ui.font, fontStyleLabel, labelTextConfig
+			param.label, Ui.font, fontStyleLabel, labelTextConfig
 		);
 		// start/stop area-dragging
 		labelText.onPointerDown = (_, e:PointerEvent)-> {trace("switch");};
@@ -80,7 +68,7 @@ class UiParamArea extends UIArea implements ParentElement
 		valueInput = new UITextLine<UiFontStyle>(labelWidth, 1,
 			width - labelWidth - 1,
 			Std.int(Ui.fontStyle.height) + paramTextConfig.textSpace.top + paramTextConfig.textSpace.bottom,
-			('$value':String),
+			('${param.value}':String),
 			Ui.font, Ui.fontStyle, paramTextConfig
 		);
 		
@@ -116,7 +104,7 @@ class UiParamArea extends UIArea implements ParentElement
 		startInput = new UITextLine<UiFontStyle>(labelWidth, 1,
 			width - labelWidth - 1,
 			Std.int(Ui.fontStyle.height) + paramTextConfig.textSpace.top + paramTextConfig.textSpace.bottom,
-			('$valueStart':String),
+			('${param.valueStart}':String),
 			Ui.font, Ui.fontStyle, paramTextConfig
 		);
 		
@@ -134,7 +122,7 @@ class UiParamArea extends UIArea implements ParentElement
 		}
 		// add(startInput);
 		
-
+		// TODO: value end
 
 		// ---------------------------
 		// -------- slider -----------
@@ -146,9 +134,9 @@ class UiParamArea extends UIArea implements ParentElement
 			
 			//vertical:true,
 			//reverse:true,
-			value: value,
-			valueStart: valueStart,
-			valueEnd: valueEnd,
+			value: param.value,
+			valueStart: param.valueStart,
+			valueEnd: param.valueEnd,
 			
 			//draggerSpace:{left:15, right:15},
 			//backgroundSpace:{left:50},
@@ -170,8 +158,6 @@ class UiParamArea extends UIArea implements ParentElement
 		};
 		
 		slider = new UISlider(1, Std.int(Ui.fontStyle.height), width - 1, height-Std.int(Ui.fontStyle.height), sliderConfig);
-		//slider.valueStart = -5;
-		//slider.valueEnd = 10;
 		slider.onMouseWheel = function(s:UISlider, e:WheelEvent) {
 			//s.value += e.deltaY * 0.1;
 			//s.setValue (s.value - e.deltaY * 0.05);
@@ -186,8 +172,6 @@ class UiParamArea extends UIArea implements ParentElement
 		}
 		add(slider);
 		
-		//slider.reverse = true;
-		//slider.value = -2;
 		// slider.updateDragger();
 		
 		
@@ -218,5 +202,7 @@ class UiParamArea extends UIArea implements ParentElement
 
 	}	
 
-
+	public function onChange(value:Float) {
+		param.value = value;
+	}
 }

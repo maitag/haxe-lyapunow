@@ -1,28 +1,16 @@
 package ui;
 
-import peote.text.Font;
-
-import peote.view.Color;
-import peote.view.UniformFloat;
-
-import peote.ui.interactive.UITextLine;
-import peote.ui.interactive.UIArea;
-
 import peote.ui.config.TextConfig;
 import peote.ui.config.AreaConfig;
-
-import peote.ui.style.interfaces.Style;
-import peote.ui.style.BoxStyle;
-import peote.ui.style.RoundBorderStyle;
-
-import peote.ui.event.PointerEvent;
-import peote.ui.event.WheelEvent;
-
+import peote.ui.interactive.UIArea;
+import peote.ui.interactive.UITextLine;
 import peote.ui.interactive.interfaces.ParentElement;
+
+import Param.DefaultParams;
 
 class UiMainArea extends UIArea implements ParentElement
 {
-	var uniformFloats:Array<UniformFloat>;
+	var defaultParams:DefaultParams;
 
 	public var formulaInput:UITextLine<UiFontStyle>;
 	public var sequenceInput:UITextLine<UiFontStyle>;
@@ -33,12 +21,12 @@ class UiMainArea extends UIArea implements ParentElement
 	public var balanceArea:UiParamArea;
 
 	public function new(
-		uniformFloats:Array<UniformFloat>,
+		defaultParams:DefaultParams,
 		xPosition:Int, yPosition:Int, width:Int, height:Int, zIndex:Int = 0,
 		?config:AreaConfig
 	) 
 	{
-		this.uniformFloats = uniformFloats;
+		this.defaultParams = defaultParams;
 		super(xPosition, yPosition, width, height, zIndex, config);
 		
 		// -----------------------------------------------------------
@@ -117,9 +105,12 @@ class UiMainArea extends UIArea implements ParentElement
 			Ui.sequence = t.text;
 			Ui.formulaChanged = true;
 		}
+
+		// Todo: 
+		// sequenceInput.onChange
+		
 		add(sequenceInput);
 		
-		// sequenceInput.onChange
 
 
 		// -------------------------------------
@@ -130,49 +121,39 @@ class UiMainArea extends UIArea implements ParentElement
 		var paramAreaWidth:Int = width - leftSpace - rightSpace;
 		var _y:Int = sequenceInput.bottom + gap;
 
-		iterPreArea = new UiParamArea( "Pre Iteration:", 0.0, 0.0, 20.0,
-			leftSpace, _y, paramAreaWidth, paramAreaHeight,
-			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
-		);
-		iterPreArea.onChange = (v:Float) -> {
-			uniformFloats[0].value = v;
-		};
-		add(iterPreArea);
-
 		// -------------------------------------
-		_y += paramAreaHeight + gap;
 
-		iterMainArea = new UiParamArea( "Main Iteration:", 3.0, 1.0, 100.0,
+		startIndexArea = new UiParamArea( defaultParams.startIndex,
 			leftSpace, _y, paramAreaWidth, paramAreaHeight,
 			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
 		);
-		iterMainArea.onChange = (v:Float) -> {
-			uniformFloats[1].value = v;
-		};
-		add(iterMainArea);
-
-		// -------------------------------------
-		_y += paramAreaHeight + gap;
-
-		startIndexArea = new UiParamArea( "Start Index:", 0.0, -10.0, 10.0,
-			leftSpace, _y, paramAreaWidth, paramAreaHeight,
-			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
-		);
-		startIndexArea.onChange = (v:Float) -> {
-			uniformFloats[2].value = v;
-		};
 		add(startIndexArea);
 
 		// -------------------------------------
 		_y += paramAreaHeight + gap;
 
-		balanceArea = new UiParamArea( "Balance:", 1.0, -1.0, 3.0,
+		iterPreArea = new UiParamArea( defaultParams.iterPre,
 			leftSpace, _y, paramAreaWidth, paramAreaHeight,
 			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
 		);
-		balanceArea.onChange = (v:Float) -> {
-			uniformFloats[3].value = v;
-		};
+		add(iterPreArea);
+
+		// -------------------------------------
+		_y += paramAreaHeight + gap;
+
+		iterMainArea = new UiParamArea( defaultParams.iterMain,
+			leftSpace, _y, paramAreaWidth, paramAreaHeight,
+			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
+		);
+		add(iterMainArea);
+
+		// -------------------------------------
+		_y += paramAreaHeight + gap;
+
+		balanceArea = new UiParamArea( defaultParams.balance,
+			leftSpace, _y, paramAreaWidth, paramAreaHeight,
+			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
+		);
 		add(balanceArea);
 
 
@@ -184,8 +165,10 @@ class UiMainArea extends UIArea implements ParentElement
 		onResizeWidth = (_, width:Int, deltaWidth:Int) -> {
 			formulaInput.width = 
 			sequenceInput.width =
+			startIndexArea.width =
 			iterPreArea.width =
-			iterMainArea.width = width - leftSpace - rightSpace;
+			iterMainArea.width =
+			balanceArea.width = width - leftSpace - rightSpace;
 		}
 
 		onResizeHeight = (_, height:Int, deltaHeight:Int) -> {
