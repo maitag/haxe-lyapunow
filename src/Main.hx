@@ -20,7 +20,8 @@ class Main extends Application
 	var ui:Ui;
 
 	var defaultParams:DefaultParams;
-	var customParams:CustomParams;
+	var customParams = new CustomParams();
+	var oldUsedParams = new CustomParams();
 	
 	override function onWindowCreate():Void
 	{
@@ -66,44 +67,100 @@ class Main extends Application
 	// ----------------- LIME EVENTS ------------------------------
 	// ------------------------------------------------------------	
 
-	var f:Formula;
-	override function update(deltaTime:Int):Void {
+	var formula:Formula;
+	var sequence:String;
+
+	override function update(deltaTime:Int):Void 
+	{
+		// TODO: --------- check a seqence-change ---------
+		if (Ui.sequenceChanged) {
+			Ui.sequenceChanged = false;
+
+			trace("-------- Sequence change --------:");
+			// TODO: check that it allways have one "x" and one "y" inside
+			// -> have to create also new ui-widgets for more (e.g. "z") 
+		}
+
+
+		var f:Formula = null;
+		// --------- check a formula-change -----------
 		if (Ui.formulaChanged) {
 			Ui.formulaChanged = false;
 			
-			try {
-				f = Ui.formula;
-				var params = f.params();
-				var found_i = false;
-				var found_n = false;
-				for (param in params) {
-					if (param == "i") found_i = true;
-					else if (param == "n") found_n = true;
-					else {
-						trace("param:",param);
-						if (param.length > 8) trace('ERROR, parameter "$param" should have not more then 8 chars');
-						f.bind( ("uParam"+param : Formula), param);
-					}
-				}
+			trace("-------- Formula change -----------:");
 
-				if (found_i && found_n) {
-					trace("ALL IS OK");
-					
-					trace(f.toString("glsl") );
-					}
-				else {
-					if (!found_i) trace("ERROR, formula is need parameter i");
-					if (!found_n) trace("ERROR, formula is need parameter n");
-				}
-
+			try { f = Ui.formula;
 			} catch (e:FormulaException) {
-				trace(e.msg); // Error: Missing right operand.
+				trace(e.msg);
 				var spaces = ""; for (i in 0...e.pos) spaces += " ";
 				trace(Ui.formula);
-				trace(spaces + "^");
+				trace(spaces + "^\n");
+				// TODO: give error-feedback by UI !
 			}
 
-			trace("update:", Ui.formula, Ui.sequence);
+			// --------------------------
+			if (f != null)
+			{
+				var found_i = false;
+				var found_n = false;
+				var param_length_ok = true;
+
+				var params = f.params();
+
+				// check for removed parameters inside formula
+				for (p in customParams.keys()) {
+					if (params.indexOf(p) < 0) {
+						trace('remove param "$p"');
+						oldUsedParams.set(p, customParams.get(p)); // store it for later usage
+						customParams.remove(p);
+						// TODO: remove that widget by UI !
+					}
+				}
+
+				// check for new added parameters inside formula
+				for (p in params) {
+					if (p == "i") found_i = true;
+					else if (p == "n") found_n = true;
+					else {
+						if ( ! customParams.exists(p)) {
+							if (p.length > 8) {
+								trace('ERROR, parameter "$p" should have not more then 8 chars');
+								// TODO: give error-feedback by UI !
+								param_length_ok = false;
+								break;
+							}
+							
+							if (oldUsedParams.exists(p)) customParams.set( p, oldUsedParams.get(p) ); // reuse from later storage
+							else customParams.set( p, new Param(p, "uParam"+p, 0.0, 0.0, 1.0) );
+
+							trace('add new param "$p"'); // TODO: add new widget for by UI !
+
+							// change parameter identifier to have unique name for glsl
+							f.bind( ("uParam"+p : Formula), p);
+						}
+					}
+				}
+
+				if (found_i && found_n && param_length_ok) {
+
+					formula = f;
+
+					trace("formula ready to update:");
+					trace(f.toString("glsl") , Ui.sequence);
+					trace('sequence: ${Ui.sequence}\n');
+
+					// TODO: -------> call lyapunows update function
+					
+				}
+				else {
+					if (!found_i) trace('ERROR, formula is need parameter "i"');
+					if (!found_n) trace('ERROR, formula is need parameter "n"');
+					// TODO: give error-feedback by UI !
+				}
+
+
+			}
+
 		}
 	}
 

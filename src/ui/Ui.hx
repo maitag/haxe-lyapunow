@@ -18,7 +18,9 @@ class Ui
 	// statics callbacks
 	public static var formula:String;
 	public static var sequence:String;
-	public static var formulaChanged = true;
+
+	public static var formulaChanged = false;
+	public static var sequenceChanged = false;
 	
 	// statics into style
 	public static var font:Font<UiFontStyle>;

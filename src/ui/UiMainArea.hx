@@ -77,7 +77,7 @@ class UiMainArea extends UIArea implements ParentElement
 			t.stopSelection(e);
 		}
 		formulaInput.onInsertText = formulaInput.onDeleteText = function(t, from:Int, to:Int, value:String) {
-			trace("formula on change",from, to, value);
+			// trace("formula on change",from, to, value);
 			Ui.formula = t.text;
 			Ui.formulaChanged = true;
 		}
@@ -103,7 +103,7 @@ class UiMainArea extends UIArea implements ParentElement
 		sequenceInput.onInsertText = sequenceInput.onDeleteText = function(t, from:Int, to:Int, value:String) {
 			trace("sequenceInput on change",from, to, value);
 			Ui.sequence = t.text;
-			Ui.formulaChanged = true;
+			Ui.sequenceChanged = true;
 		}
 
 		// Todo: 

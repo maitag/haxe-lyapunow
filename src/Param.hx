@@ -40,4 +40,4 @@ class DefaultParams {
     }
 }
 
-typedef CustomParams = Array<Param>; 
+typedef CustomParams = Map<String, Param>; 
