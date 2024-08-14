@@ -26,8 +26,8 @@ class UiMainArea extends UIArea implements ParentElement
 
 	var leftSpace:Int = 4;
 	var rightSpace:Int = 4;
-	var topSpace:Int = 2;
-	var gap:Int = 4;
+	var topSpace:Int = 5;
+	var gap:Int = 5;
 	var paramAreaHeight:Int;
 	var paramAreaWidth:Int;
 	
@@ -182,6 +182,9 @@ class UiMainArea extends UIArea implements ParentElement
 
 			formulaInput.width = paramAreaWidth;
 			sequenceInput.width = paramAreaWidth;
+
+			for (pArea in formulaParamArea) pArea.width = paramAreaWidth;
+
 			startIndexArea.width = paramAreaWidth;
 			iterPreArea.width = paramAreaWidth;
 			iterMainArea.width = paramAreaWidth;
@@ -216,10 +219,12 @@ class UiMainArea extends UIArea implements ParentElement
 		formulaParamOrder.push(p);
 
 		var y_offset = pArea.height + gap;
-		startIndexArea.y += y_offset; startIndexArea.updateLayout();
-		iterPreArea.y += y_offset; iterPreArea.updateLayout();
-		iterMainArea.y += y_offset; iterMainArea.updateLayout();
-		balanceArea.y += y_offset; balanceArea.updateLayout();
+		startIndexArea.y += y_offset;
+		iterPreArea.y += y_offset;
+		iterMainArea.y += y_offset;
+		balanceArea.y += y_offset;
+
+		updateLayout();
 	}
 
 	public function removeFormulaParam(p:String) {
@@ -232,15 +237,16 @@ class UiMainArea extends UIArea implements ParentElement
 		for (i in (formulaParamOrder.indexOf(p)+1)...formulaParamOrder.length) {
 			pArea = formulaParamArea.get( formulaParamOrder[i] );
 			pArea.y -= y_offset;
-			pArea.updateLayout();
 		}
 
 		formulaParamOrder.remove(p);
+		
+		startIndexArea.y -= y_offset;
+		iterPreArea.y -= y_offset;
+		iterMainArea.y -= y_offset;
+		balanceArea.y -= y_offset;
 
-		startIndexArea.y -= y_offset; startIndexArea.updateLayout();
-		iterPreArea.y -= y_offset; iterPreArea.updateLayout();
-		iterMainArea.y -= y_offset; iterMainArea.updateLayout();
-		balanceArea.y -= y_offset; balanceArea.updateLayout();
+		updateLayout();
 	}
 
 }

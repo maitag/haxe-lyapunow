@@ -87,16 +87,15 @@ class Main extends Application
 		if (Ui.sequenceChanged) 
 		{
 			Ui.sequenceChanged = false;
-
 			trace("-------- Sequence change --------:");
 
 			// check for removed parameters
-			for (s in sequence) {
-				if ( Ui.sequence.indexOf(s) < 0  &&  formula.hasParam(s) == false ) {
-					trace('remove sequence param "$s"');
-					oldUsedParams.set(s, formulaParams.get(s)); // store it for later usage
-					formulaParams.remove(s);
-					ui.removeFormulaParam(s); // remove that widget by UI
+			for (c in sequence) {
+				if ( c != "x" && c != "x" && Ui.sequence.indexOf(c) < 0  &&  formula.hasParam(c) == false ) {
+					// trace('remove sequence param "$c"');
+					oldUsedParams.set(c, formulaParams.get(c)); // store it for later usage
+					formulaParams.remove(c);
+					ui.removeFormulaParam(c); // remove that widget by UI
 				}
 			}
 
@@ -113,7 +112,6 @@ class Main extends Application
 				else if ( ! formulaParams.exists(c)) {
 					var param:Param = (oldUsedParams.exists(c)) ? oldUsedParams.get(c) : new Param(c, "uParam"+c, 0.0, -10, 10);
 					formulaParams.set( c, param );
-
 					// add new widget by UI !
 					ui.addFormulaParam(c, param);
 				}					
@@ -133,15 +131,17 @@ class Main extends Application
 
 		// --------- check a formula-change -----------
 
-		var f:Formula = null;
 		if (Ui.formulaChanged) 
 		{
-			Ui.formulaChanged = false;
-			
+			Ui.formulaChanged = false;				
 			trace("-------- Formula change -----------:");
-
-			try { f = Ui.formula;
-			} catch (e:FormulaException) {
+				
+			var f:Formula = null;
+			
+			try {
+				f = Ui.formula;
+			}
+			catch (e:FormulaException) {
 				trace(e.msg);
 				var spaces = ""; for (i in 0...e.pos) spaces += " ";
 				trace(Ui.formula);
@@ -161,7 +161,7 @@ class Main extends Application
 				// check for removed parameters inside formula
 				for (p in formulaParams.keys()) {
 					if (params.indexOf(p) < 0  &&  sequence.indexOf(p) < 0) {
-						trace('remove param "$p"');
+						// trace('remove param "$p"');
 						oldUsedParams.set(p, formulaParams.get(p)); // store it for later usage
 						formulaParams.remove(p);
 						ui.removeFormulaParam(p); // remove that widget by UI
