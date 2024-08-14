@@ -11,7 +11,7 @@ import FormulaException;
 
 import ui.Ui;
 import Param.DefaultParams;
-import Param.CustomParams;
+import Param.FormulaParams;
 
 class Main extends Application
 {
@@ -20,8 +20,8 @@ class Main extends Application
 	var ui:Ui;
 
 	var defaultParams:DefaultParams;
-	var customParams = new CustomParams();
-	var oldUsedParams = new CustomParams();
+	var formulaParams = new FormulaParams();
+	var oldUsedParams = new FormulaParams();
 	
 	override function onWindowCreate():Void
 	{
@@ -47,8 +47,12 @@ class Main extends Application
 			balance:    new Param( "Balance:"       , "uBalance"   , 1,  -1,   3 ),
 		};
 		
+		formulaParams = [
+			"a" => new Param( "a:"   , "uParama", 0, -1,  1 ),
+			"b" => new Param( "b:"   , "uParamb", 0, -1,  1 )
+		];
 
-		ui = new Ui(peoteView, defaultParams, "2.5*sin(i+n)^2+3", "xy", onUIInit);
+		ui = new Ui(peoteView, defaultParams, formulaParams, "a*sin(i+n)^2+b", "xy", onUIInit);
 		
 	}
 	
@@ -108,12 +112,12 @@ class Main extends Application
 				var params = f.params();
 
 				// check for removed parameters inside formula
-				for (p in customParams.keys()) {
+				for (p in formulaParams.keys()) {
 					if (params.indexOf(p) < 0) {
 						trace('remove param "$p"');
-						oldUsedParams.set(p, customParams.get(p)); // store it for later usage
-						customParams.remove(p);
-						// TODO: remove that widget by UI !
+						oldUsedParams.set(p, formulaParams.get(p)); // store it for later usage
+						formulaParams.remove(p);
+						ui.removeFormulaParam(p); // remove that widget by UI
 					}
 				}
 
@@ -122,7 +126,7 @@ class Main extends Application
 					if (p == "i") found_i = true;
 					else if (p == "n") found_n = true;
 					else {
-						if ( ! customParams.exists(p)) {
+						if ( ! formulaParams.exists(p)) {
 							if (p.length > 8) {
 								trace('ERROR, parameter "$p" should have not more then 8 chars');
 								// TODO: give error-feedback by UI !
@@ -130,10 +134,11 @@ class Main extends Application
 								break;
 							}
 							
-							if (oldUsedParams.exists(p)) customParams.set( p, oldUsedParams.get(p) ); // reuse from later storage
-							else customParams.set( p, new Param(p, "uParam"+p, 0.0, 0.0, 1.0) );
+							var param:Param = (oldUsedParams.exists(p)) ? oldUsedParams.get(p) : new Param(p, "uParam"+p, 0.0, 0.0, 1.0);
+							formulaParams.set( p, param );
 
-							trace('add new param "$p"'); // TODO: add new widget for by UI !
+							// add new widget by UI !
+							ui.addFormulaParam(p, param);
 
 							// change parameter identifier to have unique name for glsl
 							f.bind( ("uParam"+p : Formula), p);

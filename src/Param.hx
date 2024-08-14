@@ -40,4 +40,4 @@ class DefaultParams {
     }
 }
 
-typedef CustomParams = Map<String, Param>; 
+typedef FormulaParams = Map<String, Param>; 

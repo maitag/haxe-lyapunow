@@ -7,6 +7,7 @@ import peote.ui.interactive.UITextLine;
 import peote.ui.interactive.interfaces.ParentElement;
 
 import Param.DefaultParams;
+import Param.FormulaParams;
 
 class UiMainArea extends UIArea implements ParentElement
 {
@@ -15,13 +16,24 @@ class UiMainArea extends UIArea implements ParentElement
 	public var formulaInput:UITextLine<UiFontStyle>;
 	public var sequenceInput:UITextLine<UiFontStyle>;
 
+	public var formulaParamArea = new Map<String, UiParamArea>();
+	public var formulaParamOrder = new Array<String>();
+	
 	public var iterMainArea:UiParamArea;
 	public var iterPreArea:UiParamArea;
 	public var startIndexArea:UiParamArea;
 	public var balanceArea:UiParamArea;
 
+	var leftSpace:Int = 4;
+	var rightSpace:Int = 4;
+	var topSpace:Int = 2;
+	var gap:Int = 4;
+	var paramAreaHeight:Int;
+	var paramAreaWidth:Int;
+	
 	public function new(
 		defaultParams:DefaultParams,
+		formulaParams:FormulaParams,
 		xPosition:Int, yPosition:Int, width:Int, height:Int, zIndex:Int = 0,
 		?config:AreaConfig
 	) 
@@ -33,10 +45,9 @@ class UiMainArea extends UIArea implements ParentElement
 		// ---- creating an Area, header and Content-Area ------------
 		// -----------------------------------------------------------
 		
-		var leftSpace:Int = 4;
-		var rightSpace:Int = 4;
-		var topSpace:Int = 2;
-		var gap:Int = 4;		
+		paramAreaHeight = Std.int(Ui.fontStyle.height) + 24;
+		paramAreaWidth = width - leftSpace - rightSpace;
+
 		
 		var textConfig:TextConfig = {
 			backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205),
@@ -83,6 +94,7 @@ class UiMainArea extends UIArea implements ParentElement
 		}
 		add(formulaInput);
 		
+
 		// --------------------------
 		// ------- sequence ---------
 		// --------------------------
@@ -112,14 +124,17 @@ class UiMainArea extends UIArea implements ParentElement
 		add(sequenceInput);
 		
 
-
 		// -------------------------------------
 		// ------- areas for parameters --------
 		// -------------------------------------
 
-		var paramAreaHeight:Int = Std.int(Ui.fontStyle.height) + 24;
-		var paramAreaWidth:Int = width - leftSpace - rightSpace;
 		var _y:Int = sequenceInput.bottom + gap;
+		
+		for (p => param in formulaParams) {
+			formulaParamOrder.push(p);
+			formulaParamArea.set( p, createParamArea(param, _y) );
+			_y += paramAreaHeight + gap;
+		}
 
 		// -------------------------------------
 
@@ -163,12 +178,14 @@ class UiMainArea extends UIArea implements ParentElement
 		
 		// TODO: outside ?
 		onResizeWidth = (_, width:Int, deltaWidth:Int) -> {
-			formulaInput.width = 
-			sequenceInput.width =
-			startIndexArea.width =
-			iterPreArea.width =
-			iterMainArea.width =
-			balanceArea.width = width - leftSpace - rightSpace;
+			paramAreaWidth = width - leftSpace - rightSpace;
+
+			formulaInput.width = paramAreaWidth;
+			sequenceInput.width = paramAreaWidth;
+			startIndexArea.width = paramAreaWidth;
+			iterPreArea.width = paramAreaWidth;
+			iterMainArea.width = paramAreaWidth;
+			balanceArea.width =  paramAreaWidth;
 		}
 
 		onResizeHeight = (_, height:Int, deltaHeight:Int) -> {
@@ -178,8 +195,52 @@ class UiMainArea extends UIArea implements ParentElement
 
 	}	
 
-	
-	// TODO
-	public function setParams() {
+
+	// ------------------------------------------------
+	// ----- Add/Remove formula-parameter -------------
+	// ------------------------------------------------
+
+	function createParamArea(param:Param, y:Int):UiParamArea {
+		var paramArea = new UiParamArea( param,
+			leftSpace, y, paramAreaWidth, paramAreaHeight,
+			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
+		);
+		add(paramArea);
+		return paramArea;
 	}
+
+	public function addFormulaParam(p:String, param:Param) {
+		// trace("add param widget", p, param);
+		var pArea:UiParamArea = createParamArea(param, startIndexArea.y);
+		formulaParamArea.set( p, pArea );
+		formulaParamOrder.push(p);
+
+		var y_offset = pArea.height + gap;
+		startIndexArea.y += y_offset; startIndexArea.updateLayout();
+		iterPreArea.y += y_offset; iterPreArea.updateLayout();
+		iterMainArea.y += y_offset; iterMainArea.updateLayout();
+		balanceArea.y += y_offset; balanceArea.updateLayout();
+	}
+
+	public function removeFormulaParam(p:String) {
+		// trace("remove param widget" , p);
+		var pArea:UiParamArea = formulaParamArea.get(p);
+		formulaParamArea.remove(p);
+		remove(pArea);
+
+		var y_offset = pArea.height + gap;
+		for (i in (formulaParamOrder.indexOf(p)+1)...formulaParamOrder.length) {
+			pArea = formulaParamArea.get( formulaParamOrder[i] );
+			pArea.y -= y_offset;
+			pArea.updateLayout();
+		}
+
+		formulaParamOrder.remove(p);
+
+		startIndexArea.y -= y_offset; startIndexArea.updateLayout();
+		iterPreArea.y -= y_offset; iterPreArea.updateLayout();
+		iterMainArea.y -= y_offset; iterMainArea.updateLayout();
+		balanceArea.y -= y_offset; balanceArea.updateLayout();
+	}
+
 }

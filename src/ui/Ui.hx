@@ -11,7 +11,9 @@ import peote.ui.style.BoxStyle;
 import peote.ui.interactive.UISlider;
 import peote.ui.config.ResizeType;
 
+import Param;
 import Param.DefaultParams;
+import Param.FormulaParams;
 
 class Ui
 {
@@ -34,6 +36,7 @@ class Ui
 
 	var peoteView:PeoteView;
 	var defaultParams:DefaultParams;
+	var formulaParams:FormulaParams;
 	var onInit:Void->Void;
 
 	var peoteUiDisplay:PeoteUIDisplay;
@@ -41,10 +44,11 @@ class Ui
 	var mainArea:UiMainArea;
 	var mainSlider:UISlider;
 
-	public function new(peoteView:PeoteView, defaultParams:DefaultParams, formula:String, sequence:String, onInit:Void->Void)
+	public function new(peoteView:PeoteView, defaultParams:DefaultParams, formulaParams:FormulaParams, formula:String, sequence:String, onInit:Void->Void)
 	{
 		this.peoteView = peoteView;
 		this.defaultParams = defaultParams;
+		this.formulaParams = formulaParams;
 		Ui.formula = formula;
 		Ui.sequence = sequence;
 		this.onInit = onInit;
@@ -91,7 +95,7 @@ class Ui
 		mainArea_oldHeight = heightBeforeOverflow = Std.int( Math.max( Math.min( peoteView.height * 0.75, 500 ), 200));
 
 		mainArea = new UiMainArea(
-			defaultParams,
+			defaultParams, formulaParams,
 			peoteView.width - widthBeforeOverflow, 0,
 			widthBeforeOverflow, 400,
 			{ backgroundStyle:roundStyle.copy(0x00002266), resizeType:ResizeType.LEFT|ResizeType.BOTTOM|ResizeType.BOTTOM_LEFT, minWidth:200, minHeight:200 }
@@ -127,11 +131,21 @@ class Ui
 		onInit();
 	}	
 
+	// ------------------------------------------------
+	// ----- Add/Remove formula-parameter -------------
+	// ------------------------------------------------
 
+	public function addFormulaParam(paramIdentifier:String, param:Param) {
+		mainArea.addFormulaParam(paramIdentifier, param);
+	}
+
+	public function removeFormulaParam(paramIdentifier:String) {
+		mainArea.removeFormulaParam(paramIdentifier);
+	}
 
 	// ------------------------------------------------
-	// -------------- RESIZING ------------------------ 
-	// ------------------------------------------------	
+	// -------------- RESIZING ------------------------
+	// ------------------------------------------------
 	var widthIsOverflow = false;
 	var widthBeforeOverflow:Int;
 	var heightIsOverflow = false;
