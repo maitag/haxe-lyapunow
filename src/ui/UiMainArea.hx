@@ -26,7 +26,7 @@ class UiMainArea extends UIArea implements ParentElement
 
 	var leftSpace:Int = 4;
 	var rightSpace:Int = 4;
-	var topSpace:Int = 5;
+	var topSpace:Int = 2;
 	var gap:Int = 5;
 	var paramAreaHeight:Int;
 	var paramAreaWidth:Int;
@@ -172,8 +172,6 @@ class UiMainArea extends UIArea implements ParentElement
 		add(balanceArea);
 
 
-		
-				
 		// --- re-arrange inner content if area size is changing ---
 		
 		// TODO: outside ?
@@ -190,12 +188,12 @@ class UiMainArea extends UIArea implements ParentElement
 			iterMainArea.width = paramAreaWidth;
 			balanceArea.width =  paramAreaWidth;
 		}
-
+		/*
 		onResizeHeight = (_, height:Int, deltaHeight:Int) -> {
 			
-		}
+		}*/
 
-
+		maxHeight = innerHeight + 6; 
 	}	
 
 
@@ -224,7 +222,12 @@ class UiMainArea extends UIArea implements ParentElement
 		iterMainArea.y += y_offset;
 		balanceArea.y += y_offset;
 
+		updateInnerSize();
+		maxHeight = innerHeight + 6;
+		height += y_offset;
+
 		updateLayout();
+
 	}
 
 	public function removeFormulaParam(p:String) {
@@ -245,6 +248,11 @@ class UiMainArea extends UIArea implements ParentElement
 		iterPreArea.y -= y_offset;
 		iterMainArea.y -= y_offset;
 		balanceArea.y -= y_offset;
+
+		updateInnerSize();
+		maxHeight = innerHeight + 6;
+		height -= y_offset;
+		if (height < minHeight+5) height = minHeight+5;
 
 		updateLayout();
 	}

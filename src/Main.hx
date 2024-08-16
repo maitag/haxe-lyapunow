@@ -263,9 +263,9 @@ class Main extends Application
 		moveDrag(x, y);
 	}
 	
-	override function onMouseWheel (deltaX:Float, deltaY:Float, deltaMode:MouseWheelMode):Void {	
-		if ( deltaY > 0 )
-		{
+	override function onMouseWheel (deltaX:Float, deltaY:Float, deltaMode:MouseWheelMode):Void {
+		if (mouse_x >= ui.mainArea.x && mouse_y <= ui.mainArea.bottom) return;
+		if ( deltaY > 0 ) {
 			if (scaleX.value < 0xfffff) {
 				positionX.value -= zoomstep * (mouse_x - positionX.value) - (mouse_x - positionX.value);
 				scaleX.value *= zoomstep;
@@ -275,8 +275,7 @@ class Main extends Application
 				scaleY.value *= zoomstep;
 			}
 		}
-		else 
-		{
+		else {
 			if ( scaleX.value > 0.0001 ) {
 				positionX.value -= (mouse_x - positionX.value) / zoomstep - (mouse_x - positionX.value);
 				scaleX.value /= zoomstep;
@@ -310,8 +309,7 @@ class Main extends Application
 	inline function moveDrag(x:Float, y:Float) {
 		mouse_x = x;
 		mouse_y = y;		
-		if (dragmode)
-		{
+		if (dragmode) {
 			positionX.value = (dragstart_x + mouse_x);
 			positionY.value = (dragstart_y + mouse_y);
 			changed = true;

@@ -10,6 +10,7 @@ import peote.ui.style.RoundBorderStyle;
 import peote.ui.style.BoxStyle;
 import peote.ui.interactive.UISlider;
 import peote.ui.config.ResizeType;
+import peote.ui.event.WheelEvent;
 
 import Param;
 import Param.DefaultParams;
@@ -96,32 +97,57 @@ class Ui
 
 		mainArea = new UiMainArea(
 			defaultParams, formulaParams,
-			peoteView.width - widthBeforeOverflow, 0,
+			peoteView.width - widthBeforeOverflow, 3,
 			widthBeforeOverflow, 400,
-			{ backgroundStyle:roundStyle.copy(0x00002266), resizeType:ResizeType.LEFT|ResizeType.BOTTOM|ResizeType.BOTTOM_LEFT, minWidth:200, minHeight:200 }
+			{
+				backgroundStyle:roundStyle.copy(0x00002266),
+				resizeType:ResizeType.LEFT|ResizeType.BOTTOM|ResizeType.BOTTOM_LEFT,
+				backgroundSpace:{top: -3, bottom: -3}, // TODO: adjust the resizers also !
+				minWidth:130, minHeight:100
+			}
 		);	
 		peoteUiDisplay.add(mainArea);
-		mainArea.updateLayout(); // is need for inner UIAreas
+		
+		mainArea.onResizeHeight = (_, height:Int, deltaHeight:Int) -> {
+
+			if (height > peoteUiDisplay.height - 6) height = peoteUiDisplay.height - 6;
+
+			mainSlider.height = height+6;
+			mainSlider.updateLayout();
+
+			// TODO: show and hide the slider,
+			// resize all of mainArea with different right-space
+			if (!mainSlider.isVisible && mainArea.innerHeight > mainArea.height) {
+				mainSlider.show();
+				mainArea.width -= mainSlider.width;
+			} else if (mainSlider.isVisible && mainArea.innerHeight <= mainArea.height) {
+				mainSlider.hide();
+				mainArea.width += mainSlider.width;
+			}
+		};
+
 
 
 		
 		// ------------------------------------
 		// ---- slider to scroll main area ----		
 		// ------------------------------------
-		/*		
-		mainSlider = new UISlider(mainArea.right, mainArea.top, 20, mainArea.height, {
-			backgroundStyle: roundStyle.copy(Color.GREY2),
-			draggerStyle: roundStyle.copy(Color.GREY3, Color.GREY2, 0.5),
+		
+		mainSlider = new UISlider(peoteView.width - 20, 0, 20, mainArea.height, {
+			// backgroundStyle: roundStyle.copy(Color.GREY2),
+			draggerStyle: roundStyle.copy(0x072303bb, 0x77aa22dd, 1),
 			draggerSize:14,
 			draggSpace:1,
 		});
 		peoteUiDisplay.add(mainSlider);
+		if (mainArea.innerHeight <= mainArea.height) mainSlider.hide();
+		
 		mainSlider.onMouseWheel = (_, e:WheelEvent) -> mainSlider.setWheelDelta(e.deltaY); //.setDelta( e.deltaY * 15);
-
+		
 		// bind slider to mainArea
 		mainArea.bindVSlider(mainSlider);
-		*/
-
+		
+		
 		/*
 		\o/
 		*/
@@ -129,6 +155,10 @@ class Ui
 		PeoteUIDisplay.registerEvents(peoteView.window);
 
 		onInit();
+		
+		mainArea.height = mainArea.innerHeight + 6;
+		mainArea.updateLayout(); // is need for inner UIAreas
+
 	}	
 
 	// ------------------------------------------------
@@ -155,6 +185,10 @@ class Ui
 	public function resize(width:Int, height:Int) {
 		peoteUiDisplay.width = width;
 		peoteUiDisplay.height = height;
+
+
+		if (mainSlider.isVisible) width -= mainSlider.width;
+		height -= 6;
 
 		if (widthIsOverflow) {
 			if (mainArea.x > 0) {
@@ -211,6 +245,10 @@ class Ui
 			}
 		}
 		
+		mainSlider.height = mainArea.height+6;
+		mainSlider.right = peoteUiDisplay.width;
+
+		mainSlider.updateLayout();
 		mainArea.updateLayout();
 	}
 
