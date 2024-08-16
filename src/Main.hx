@@ -2,7 +2,8 @@ package;
 
 import lime.app.Application;
 import lime.ui.Window;
-import lime.ui.MouseCursor;
+import lime.ui.MouseButton;
+import lime.ui.MouseWheelMode;
 
 import peote.view.*;
 
@@ -19,6 +20,11 @@ class Main extends Application
 	var lyapunowDisplay:Display;
 	var ui:Ui;
 
+	var positionX:UniformFloat;
+	var positionY:UniformFloat;
+	var scaleX:UniformFloat;
+	var scaleY:UniformFloat;
+	
 	var defaultParams:DefaultParams;
 	var formulaParams = new FormulaParams();
 	var oldUsedParams = new FormulaParams();
@@ -42,6 +48,11 @@ class Main extends Application
 		
 		lyapunowDisplay = new Display(0, 0, window.width, window.height);
 		peoteView.addDisplay(lyapunowDisplay);
+
+		positionX = new UniformFloat("uPositionX", 0.0);
+		positionY = new UniformFloat("uPositionY", 0.0);
+		scaleX = new UniformFloat("uScaleX", 1.0);
+		scaleY = new UniformFloat("uScaleY", 1.0);
 
 		defaultParams = {
 			startIndex: new Param( "Start index:"   , "uStartIndex", 0, -10,  10 ),
@@ -68,7 +79,7 @@ class Main extends Application
 	{
 		trace("onUiInit");
 
-		Lyapunow.init(lyapunowDisplay, formula, sequence, defaultParams, formulaParams);
+		Lyapunow.init(lyapunowDisplay, formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
 
 		// var timer = new haxe.Timer(1000); timer.run = updateTime;
 	}	
@@ -207,16 +218,11 @@ class Main extends Application
 
 		if (updateShader) {
 			// call lyapunows update function
-			Lyapunow.updateShader(formula, sequence, defaultParams, formulaParams);
+			Lyapunow.updateShader(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
 		}
 
 	}
 
-	// override function onMouseMove (x:Float, y:Float):Void {}
-
-	// override function onMouseDown (x:Float, y:Float, button:lime.ui.MouseButton):Void {}
-	// override function onMouseUp (x:Float, y:Float, button:lime.ui.MouseButton):Void {}	
-	// override function onMouseWheel (deltaX:Float, deltaY:Float, deltaMode:lime.ui.MouseWheelMode):Void {}
 	// override function onMouseMoveRelative (x:Float, y:Float):Void {}
 
 	// ----------------- TOUCH EVENTS ------------------------------
@@ -227,6 +233,79 @@ class Main extends Application
 	// ----------------- KEYBOARD EVENTS ---------------------------
 	// override function onKeyDown (keyCode:lime.ui.KeyCode, modifier:lime.ui.KeyModifier):Void {}	
 	// override function onKeyUp (keyCode:lime.ui.KeyCode, modifier:lime.ui.KeyModifier):Void {}
+	
+	//THANK u BloooddSWEATbeers ;) -> OLD friend (^^)*hugs
+	var mouse_x:Float = 0;
+	var mouse_y:Float = 0;
+	var dragstart_x:Float = 0;
+	var dragstart_y:Float = 0;
+	var dragmode:Bool = false;
+	var changed:Bool = false;
+	var zoom:Float = 1.0;
+	var zoomstep:Float = 1.2;
+
+	override function onMouseDown(x:Float, y:Float, button:MouseButton):Void {	
+		if ( button == MouseButton.LEFT ) startDrag(x, y);
+	}
+	
+	override function onMouseUp(x:Float, y:Float, button:MouseButton):Void {	
+		if ( button == MouseButton.LEFT ) stopDrag();
+	}
+	
+	override function onMouseMove (x:Float, y:Float):Void {
+		moveDrag(x, y);
+	}
+	
+	override function onMouseWheel (deltaX:Float, deltaY:Float, deltaMode:MouseWheelMode):Void {	
+		if ( deltaY > 0 )
+		{
+			if (zoom < 10000)
+			{
+				positionX.value -= zoomstep * (mouse_x - positionX.value) - (mouse_x - positionX.value);
+				positionY.value -= zoomstep * (mouse_y - positionY.value) - (mouse_y - positionY.value);
+				zoom *= zoomstep;
+			}
+		}
+		else if ( zoom > 0.03 )
+		{
+			positionX.value -= (mouse_x - positionX.value) / zoomstep - (mouse_x - positionX.value);
+			positionY.value -= (mouse_y - positionY.value) / zoomstep - (mouse_y - positionY.value);
+			zoom /= zoomstep;
+		}
+		
+		scaleX.value = scaleY.value =  zoom;
+		
+		// updateUrlParams();
+	}
+
+	// Dragging --------------------------------------------------
+	
+	inline function startDrag(x:Float, y:Float) {
+		if (x >= ui.mainArea.x && y <= ui.mainArea.bottom) return;
+		dragstart_x = positionX.value - x;
+		dragstart_y = positionY.value - y;
+		dragmode = true;		
+	}
+		
+	inline function stopDrag() {
+		dragmode = false;
+		if (changed) {
+			changed = false;
+			// updateUrlParams();
+		}
+	}
+	
+	inline function moveDrag(x:Float, y:Float) {
+		mouse_x = x;
+		mouse_y = y;		
+		if (dragmode)
+		{
+			positionX.value = (dragstart_x + mouse_x);
+			positionY.value = (dragstart_y + mouse_y);
+			changed = true;
+		}
+	}
+	
 
 	// -------------- other WINDOWS EVENTS ----------------------------
 	override function onWindowResize (width:Int, height:Int):Void {

@@ -41,7 +41,7 @@ class Ui
 
 	var peoteUiDisplay:PeoteUIDisplay;
 
-	var mainArea:UiMainArea;
+	public var mainArea:UiMainArea;
 	var mainSlider:UISlider;
 
 	public function new(peoteView:PeoteView, defaultParams:DefaultParams, formulaParams:FormulaParams, formula:String, sequence:String, onInit:Void->Void)

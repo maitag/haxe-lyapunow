@@ -22,14 +22,16 @@ class Lyapunow implements Element
 	static public var buffer:Buffer<Lyapunow>;
 	static public var program:Program;	
 	
-	static public function init(display:Display, formula:Formula, sequence:Array<String>, defaultParams:DefaultParams, formulaParams:FormulaParams)
+	static public function init(display:Display, formula:Formula, sequence:Array<String>,
+		positionX:UniformFloat, positionY:UniformFloat, scaleX:UniformFloat, scaleY:UniformFloat, 
+		defaultParams:DefaultParams, formulaParams:FormulaParams)
 	{	
 		buffer = new Buffer<Lyapunow>(1);
 		program = new Program(buffer);
 		
 		program.setColorFormula( 'lyapunow()', false );
 		program.setFragmentFloatPrecision("high", false);
-		updateShader(formula, sequence, defaultParams, formulaParams);
+		updateShader(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
 		
 		display.addProgram(program);
 
@@ -37,7 +39,9 @@ class Lyapunow implements Element
         buffer.addElement( new Lyapunow() );
 	}
 
-	static public function updateShader(formula:Formula, sequence:Array<String>, defaultParams:DefaultParams, formulaParams:FormulaParams) {
+	static public function updateShader(formula:Formula, sequence:Array<String>,
+		positionX:UniformFloat, positionY:UniformFloat, scaleX:UniformFloat, scaleY:UniformFloat, 
+		defaultParams:DefaultParams, formulaParams:FormulaParams) {
 
 		// trace("formula", formula.toString("glsl"));
 
@@ -62,54 +66,35 @@ class Lyapunow implements Element
 
 		program.injectIntoFragmentShader(
 			'
-				float func(float i, float n $extra_func_param)
-				{
-					// return 2.5*sin(i+n)*sin(i+n)+2.0;
-					// return uParama*sin(i+n)*sin(i+n)+uParamb;	
+				float func(float i, float n $extra_func_param) {
 					return ${formula.toString("glsl")};
 				}
 	
-				float deriv(float i, float n $extra_func_param)
-				{
-					// return 2.5*sin(2.0*(i+n));
-					// return uParama*sin(2.0*(i+n));	
+				float deriv(float i, float n $extra_func_param) {
 					return ${derivate.toString("glsl")};
 				}
 	
-				void pre_step(inout float i, vec2 xy)
-				{
-					// i = func(i, xy.x);
-					// i = func(i, xy.y);	
+				void pre_step(inout float i, vec2 xy) {
 					$pre_sequence
 				}
 	
-				void main_step(inout float index, inout float i, vec2 xy)
-				{
-					// i = func(i, xy.x);
-					// index += (  log(abs(deriv(i, xy.x)))*uBalance + deriv(i, xy.x)*(1.0-uBalance)  ) / 2.0;
-	
-					// i = func(i, xy.y);
-					// index += (  log(abs(deriv(i, xy.y)))*uBalance + deriv(i, xy.y)*(1.0-uBalance)  ) / 2.0;					
+				void main_step(inout float index, inout float i, vec2 xy) {
 					$main_sequence
 				}
 	
 				vec4 lyapunow()
 				{
-					vec2 uPosition = vec2(0.0, 0.0);
-					vec2 uScale = vec2(800.0/vSize.x, 800.0/vSize.y);
-					
 					vec3 uColpos = vec3(1.0, 0.0, 0.0);
 					vec3 uColmid = vec3(0.0, 0.0, 0.0);
 					vec3 uColneg = vec3(0.0, 0.0, 1.0);
-	
-	
-					// Parameter
+		
 					float i = uStartIndex;
-					vec2 xy = (vTexCoord - uPosition) / uScale;
+
+					vec2 xy = ( (vTexCoord*vSize - vec2(uPositionX, uPositionY))/400.0 ) / uScaleX;
 					
 					int iter_pre =  int(floor(uIterPre));
 					int iter_main = int(floor(uIterMain));
-					float iter_main_full = floor(uIterMain) * ${sequence.length}.0; // in depend of how long the sequence is !
+					float iter_main_full = floor(uIterMain) * ${sequence.length}.0;
 					if (iter_main_full == 0.0) iter_main_full = 1.175494351e-38;
 	
 					float nabla_pre = uIterPre - float(iter_pre);
@@ -148,15 +133,15 @@ class Lyapunow implements Element
 	
 						main_step(index, i, xy);
 	
-						index = index/(iter_main_full + ${sequence.length}.0); // in depend of how long the sequence is !
+						index = index/(iter_main_full + ${sequence.length}.0);
 						index = index*nabla_main + index_pre*(1.0-nabla_main);
 					}
 	
-					return vec4( index*( (index > 0.0) ? uColpos-uColmid : uColmid-uColneg   )+uColmid, 1.0 );
+					return vec4( index*( (index > 0.0) ? uColpos-uColmid : uColmid-uColneg  )+uColmid, 1.0 );
 				}			
 			'
 			, false // inject uTime
-			, defaultParams.uniforms.concat( [for (v in formulaParams) v.uniform] )
+			, defaultParams.uniforms.concat( [for (v in formulaParams) v.uniform] ).concat([positionX, positionY, scaleX, scaleY])
 			);
 	
 	}
