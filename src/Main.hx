@@ -4,6 +4,8 @@ import lime.app.Application;
 import lime.ui.Window;
 import lime.ui.MouseButton;
 import lime.ui.MouseWheelMode;
+import lime.ui.KeyCode;
+import lime.ui.KeyModifier;
 
 import peote.view.*;
 
@@ -231,8 +233,13 @@ class Main extends Application
 	// override function onTouchEnd (touch:lime.ui.Touch):Void {}
 	
 	// ----------------- KEYBOARD EVENTS ---------------------------
-	// override function onKeyDown (keyCode:lime.ui.KeyCode, modifier:lime.ui.KeyModifier):Void {}	
-	// override function onKeyUp (keyCode:lime.ui.KeyCode, modifier:lime.ui.KeyModifier):Void {}
+	var isShift = false;
+	override function onKeyDown (keyCode:KeyCode, modifier:KeyModifier):Void {
+		if (keyCode == KeyCode.LEFT_SHIFT || keyCode == KeyCode.RIGHT_SHIFT) isShift = true;
+	}	
+	override function onKeyUp (keyCode:KeyCode, modifier:KeyModifier):Void {
+		if (keyCode == KeyCode.LEFT_SHIFT || keyCode == KeyCode.RIGHT_SHIFT) isShift = false;
+	}
 	
 	//THANK u BloooddSWEATbeers ;) -> OLD friend (^^)*hugs
 	var mouse_x:Float = 0;
@@ -259,21 +266,26 @@ class Main extends Application
 	override function onMouseWheel (deltaX:Float, deltaY:Float, deltaMode:MouseWheelMode):Void {	
 		if ( deltaY > 0 )
 		{
-			if (zoom < 10000)
-			{
+			if (scaleX.value < 0xfffff) {
 				positionX.value -= zoomstep * (mouse_x - positionX.value) - (mouse_x - positionX.value);
+				scaleX.value *= zoomstep;
+			}
+			if ( !isShift && scaleY.value < 0xfffff) {
 				positionY.value -= zoomstep * (mouse_y - positionY.value) - (mouse_y - positionY.value);
-				zoom *= zoomstep;
+				scaleY.value *= zoomstep;
 			}
 		}
-		else if ( zoom > 0.03 )
+		else 
 		{
-			positionX.value -= (mouse_x - positionX.value) / zoomstep - (mouse_x - positionX.value);
-			positionY.value -= (mouse_y - positionY.value) / zoomstep - (mouse_y - positionY.value);
-			zoom /= zoomstep;
+			if ( scaleX.value > 0.0001 ) {
+				positionX.value -= (mouse_x - positionX.value) / zoomstep - (mouse_x - positionX.value);
+				scaleX.value /= zoomstep;
+			}
+			if ( !isShift && scaleY.value > 0.0001 ) {
+				positionY.value -= (mouse_y - positionY.value) / zoomstep - (mouse_y - positionY.value);
+				scaleY.value /= zoomstep;
+			}
 		}
-		
-		scaleX.value = scaleY.value =  zoom;
 		
 		// updateUrlParams();
 	}

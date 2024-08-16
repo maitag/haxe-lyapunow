@@ -90,7 +90,7 @@ class Lyapunow implements Element
 		
 					float i = uStartIndex;
 
-					vec2 xy = ( (vTexCoord*vSize - vec2(uPositionX, uPositionY))/400.0 ) / uScaleX;
+					vec2 xy = ( (vTexCoord*vSize - vec2(uPositionX, uPositionY))/400.0 ) / vec2(uScaleX, uScaleY);
 					
 					int iter_pre =  int(floor(uIterPre));
 					int iter_main = int(floor(uIterMain));
