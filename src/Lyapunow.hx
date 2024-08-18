@@ -6,6 +6,8 @@ import Formula;
 import Param.DefaultParams;
 import Param.FormulaParams;
 
+import peote.view.Color;
+
 class Lyapunow implements Element
 {
 	// position in pixel (relative to upper left corner of Display)
@@ -16,11 +18,14 @@ class Lyapunow implements Element
 	@sizeX @varying @const @formula("uResolution.x") var w:Int;
 	@sizeY @varying @const @formula("uResolution.y") var h:Int;
 
-	
+	@color var posColor:Color = 0xff0000ff;
+	@color var midColor:Color = 0x000000ff;
+	@color var negColor:Color = 0x0000ffff;
 	// --------------------------------------------------------------------------	
 	
 	static public var buffer:Buffer<Lyapunow>;
-	static public var program:Program;	
+	static public var program:Program;
+	static public var element:Lyapunow;
 	
 	static public function init(display:Display, formula:Formula, sequence:Array<String>,
 		positionX:UniformFloat, positionY:UniformFloat, scaleX:UniformFloat, scaleY:UniformFloat, 
@@ -29,14 +34,29 @@ class Lyapunow implements Element
 		buffer = new Buffer<Lyapunow>(1);
 		program = new Program(buffer);
 		
-		program.setColorFormula( 'lyapunow()', false );
+		program.setColorFormula( 'lyapunow(posColor, midColor, negColor)', false );
 		program.setFragmentFloatPrecision("high", false);
 		updateShader(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
 		
 		display.addProgram(program);
 
+		element = new Lyapunow();
+        buffer.addElement( element );
+	}
 
-        buffer.addElement( new Lyapunow() );
+	static public function updatePosColor(color:Color) {
+		element.posColor = color;
+		buffer.updateElement(element);
+	}
+
+	static public function updateMidColor(color:Color) {
+		element.midColor = color;
+		buffer.updateElement(element);
+	}
+
+	static public function updateNegColor(color:Color) {
+		element.negColor = color;
+		buffer.updateElement(element);
 	}
 
 	static public function updateShader(formula:Formula, sequence:Array<String>,
@@ -82,12 +102,8 @@ class Lyapunow implements Element
 					$main_sequence
 				}
 	
-				vec4 lyapunow()
-				{
-					vec3 uColpos = vec3(1.0, 0.0, 0.0);
-					vec3 uColmid = vec3(0.0, 0.0, 0.0);
-					vec3 uColneg = vec3(0.0, 0.0, 1.0);
-		
+				vec4 lyapunow(vec4 posColor, vec4 midColor, vec4 negColor)
+				{		
 					float i = uStartIndex;
 
 					vec2 xy = ( (vTexCoord*vSize - vec2(uPositionX, uPositionY))/400.0 ) / vec2(uScaleX, uScaleY);
@@ -137,7 +153,7 @@ class Lyapunow implements Element
 						index = index*nabla_main + index_pre*(1.0-nabla_main);
 					}
 	
-					return vec4( index*( (index > 0.0) ? uColpos-uColmid : uColmid-uColneg  )+uColmid, 1.0 );
+					return  index*( (index > 0.0) ? posColor - midColor : midColor - negColor  ) + midColor ;
 				}			
 			'
 			, false // inject uTime

@@ -102,7 +102,7 @@ class Ui
 			{
 				backgroundStyle:roundStyle.copy(0x00002266),
 				resizeType:ResizeType.LEFT|ResizeType.BOTTOM|ResizeType.BOTTOM_LEFT,
-				backgroundSpace:{top: -3, bottom: -3}, // TODO: adjust the resizers also !
+				backgroundSpace:{top: -3, bottom: -3}, // TODO: adjust the resizers also into ui-lib!
 				minWidth:130, minHeight:100
 			}
 		);	
@@ -142,7 +142,10 @@ class Ui
 		peoteUiDisplay.add(mainSlider);
 		if (mainArea.innerHeight <= mainArea.height) mainSlider.hide();
 		
-		mainSlider.onMouseWheel = (_, e:WheelEvent) -> mainSlider.setWheelDelta(e.deltaY); //.setDelta( e.deltaY * 15);
+		mainSlider.onMouseWheel = (_, e:WheelEvent) -> {
+			// mainSlider.setWheelDelta(e.deltaY);
+			mainSlider.setDelta( e.deltaY * 17);
+		} 
 		
 		// bind slider to mainArea
 		mainArea.bindVSlider(mainSlider);
@@ -158,7 +161,7 @@ class Ui
 		
 		mainArea.height = mainArea.innerHeight + 6;
 		mainArea.updateLayout(); // is need for inner UIAreas
-
+		resize(peoteUiDisplay.width, peoteUiDisplay.height);
 	}	
 
 	// ------------------------------------------------

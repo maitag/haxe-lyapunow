@@ -9,6 +9,8 @@ import peote.ui.interactive.interfaces.ParentElement;
 import Param.DefaultParams;
 import Param.FormulaParams;
 
+import peote.view.Color;
+
 class UiMainArea extends UIArea implements ParentElement
 {
 	var defaultParams:DefaultParams;
@@ -23,6 +25,10 @@ class UiMainArea extends UIArea implements ParentElement
 	public var iterPreArea:UiParamArea;
 	public var startIndexArea:UiParamArea;
 	public var balanceArea:UiParamArea;
+	
+	public var colorNegArea:UiColorArea;
+	public var colorMidArea:UiColorArea;
+	public var colorPosArea:UiColorArea;
 
 	var leftSpace:Int = 4;
 	var rightSpace:Int = 4;
@@ -171,8 +177,38 @@ class UiMainArea extends UIArea implements ParentElement
 		);
 		add(balanceArea);
 
+		_y += paramAreaHeight + gap;
 
+		// -------------------------------------
+		// -------- areas for coloras ----------
+		// -------------------------------------
+		
+		var sliderHeight = 20;
+		var colorAreaHeight:Int = Std.int(Ui.fontStyle.height + (sliderHeight+1)*3 );
+
+		colorPosArea = new UiColorArea( "color for positive index", Color.RED, Lyapunow.updatePosColor, 
+			leftSpace, _y, paramAreaWidth, colorAreaHeight, sliderHeight,
+			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
+		);
+		add(colorPosArea);
+		_y += colorAreaHeight + gap;
+		
+		colorMidArea = new UiColorArea( "color for middle index", Color.BLACK, Lyapunow.updateMidColor, 
+			leftSpace, _y, paramAreaWidth, colorAreaHeight, sliderHeight,
+			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
+		);
+		add(colorMidArea);
+		_y += colorAreaHeight + gap;
+		
+		colorNegArea = new UiColorArea( "color for negative index", Color.BLUE, Lyapunow.updateNegColor, 
+			leftSpace, _y, paramAreaWidth, colorAreaHeight, sliderHeight,
+			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
+		);
+		add(colorNegArea);
+		
+		// ---------------------------------------------------------
 		// --- re-arrange inner content if area size is changing ---
+		// ---------------------------------------------------------
 		
 		// TODO: outside ?
 		onResizeWidth = (_, width:Int, deltaWidth:Int) -> {
@@ -187,6 +223,9 @@ class UiMainArea extends UIArea implements ParentElement
 			iterPreArea.width = paramAreaWidth;
 			iterMainArea.width = paramAreaWidth;
 			balanceArea.width =  paramAreaWidth;
+			colorPosArea.width =  paramAreaWidth;
+			colorMidArea.width =  paramAreaWidth;
+			colorNegArea.width =  paramAreaWidth;
 		}
 		/*
 		onResizeHeight = (_, height:Int, deltaHeight:Int) -> {
