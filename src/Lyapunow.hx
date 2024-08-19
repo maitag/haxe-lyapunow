@@ -65,7 +65,10 @@ class Lyapunow implements Element
 
 		// trace("formula", formula.toString("glsl"));
 
-		var derivate:Formula = formula.derivate("i").simplify();
+		// var derivate:Formula = formula.derivate("i").simplify(); // could take to long
+		var derivate:Formula = formula.derivate("i");
+
+
 		// trace("derivate", derivate.toString("glsl"));
 
 		var pre_sequence:String = "";
