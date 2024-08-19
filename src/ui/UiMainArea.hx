@@ -56,7 +56,7 @@ class UiMainArea extends UIArea implements ParentElement
 
 		
 		var textConfig:TextConfig = {
-			backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205),
+			backgroundStyle:Ui.paramStyleBG.copy(),
 			selectionStyle: Ui.selectionStyle,
 			cursorStyle: Ui.cursorStyle,
 			textSpace: { left:5, right:5, top:5, bottom:5 },
@@ -68,7 +68,7 @@ class UiMainArea extends UIArea implements ParentElement
 /*		
 		var header = new UITextLine<UiFontStyle>(gap, gap,
 			width - gap - gap, headerSize, 
-			"Shader Code", fontUi, fontStyleUi, { backgroundStyle:bgStyleHeader, hAlign:HAlign.CENTER }
+			"Shader Code", fontUi, fontStyleUi, { backgroundStyle:paramStyleFG, hAlign:HAlign.CENTER }
 		);
 		// start/stop area-dragging
 		header.onPointerDown = (_, e:PointerEvent)-> startDragging(e);
@@ -99,7 +99,6 @@ class UiMainArea extends UIArea implements ParentElement
 			Ui.formulaChanged = true;
 		}
 		add(formulaInput);
-		
 
 		// --------------------------
 		// ------- sequence ---------
@@ -146,16 +145,16 @@ class UiMainArea extends UIArea implements ParentElement
 
 		startIndexArea = new UiParamArea( defaultParams.startIndex,
 			leftSpace, _y, paramAreaWidth, paramAreaHeight,
-			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
+			{ backgroundStyle:Ui.paramStyleBG.copy() }
 		);
 		add(startIndexArea);
-
+	
 		// -------------------------------------
 		_y += paramAreaHeight + gap;
 
 		iterPreArea = new UiParamArea( defaultParams.iterPre,
 			leftSpace, _y, paramAreaWidth, paramAreaHeight,
-			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
+			{ backgroundStyle:Ui.paramStyleBG.copy() }
 		);
 		add(iterPreArea);
 
@@ -164,7 +163,7 @@ class UiMainArea extends UIArea implements ParentElement
 
 		iterMainArea = new UiParamArea( defaultParams.iterMain,
 			leftSpace, _y, paramAreaWidth, paramAreaHeight,
-			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
+			{ backgroundStyle:Ui.paramStyleBG.copy() }
 		);
 		add(iterMainArea);
 
@@ -173,7 +172,7 @@ class UiMainArea extends UIArea implements ParentElement
 
 		balanceArea = new UiParamArea( defaultParams.balance,
 			leftSpace, _y, paramAreaWidth, paramAreaHeight,
-			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
+			{ backgroundStyle:Ui.paramStyleBG.copy() }
 		);
 		add(balanceArea);
 
@@ -188,21 +187,21 @@ class UiMainArea extends UIArea implements ParentElement
 
 		colorPosArea = new UiColorArea( "color for positive index", Color.RED, Lyapunow.updatePosColor, 
 			leftSpace, _y, paramAreaWidth, colorAreaHeight, sliderHeight,
-			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
+			{ backgroundStyle:Ui.paramStyleBG.copy() }
 		);
 		add(colorPosArea);
 		_y += colorAreaHeight + gap;
 		
 		colorMidArea = new UiColorArea( "color for middle index", Color.BLACK, Lyapunow.updateMidColor, 
 			leftSpace, _y, paramAreaWidth, colorAreaHeight, sliderHeight,
-			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
+			{ backgroundStyle:Ui.paramStyleBG.copy() }
 		);
 		add(colorMidArea);
 		_y += colorAreaHeight + gap;
 		
 		colorNegArea = new UiColorArea( "color for negative index", Color.BLUE, Lyapunow.updateNegColor, 
 			leftSpace, _y, paramAreaWidth, colorAreaHeight, sliderHeight,
-			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
+			{ backgroundStyle:Ui.paramStyleBG.copy() }
 		);
 		add(colorNegArea);
 		
@@ -243,9 +242,10 @@ class UiMainArea extends UIArea implements ParentElement
 	function createParamArea(param:Param, y:Int):UiParamArea {
 		var paramArea = new UiParamArea( param,
 			leftSpace, y, paramAreaWidth, paramAreaHeight,
-			{ backgroundStyle:Ui.roundStyle.copy(0x11150fbb, 0xddff2205) }
+			{ backgroundStyle:Ui.paramStyleBG.copy() }
 		);
 		add(paramArea);
+		trace(z, paramArea.z, paramArea.labelText.z, paramArea.valueInput.z);
 		return paramArea;
 	}
 

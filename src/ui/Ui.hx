@@ -25,15 +25,6 @@ class Ui
 	public static var formulaChanged = false;
 	public static var sequenceChanged = false;
 	
-	// statics into style
-	public static var font:Font<UiFontStyle>;
-	public static var fontStyle = new UiFontStyle();
-
-	public static var roundStyle = RoundBorderStyle.createById(0);
-	public static var boxStyle  = BoxStyle.createById(0);
-	public static var selectionStyle = BoxStyle.createById(1, Color.GREY3);
-	public static var cursorStyle = BoxStyle.createById(2, 0xaa2211ff);
-
 
 	var peoteView:PeoteView;
 	var defaultParams:DefaultParams;
@@ -44,6 +35,17 @@ class Ui
 
 	public var mainArea:UiMainArea;
 	var mainSlider:UISlider;
+
+	// statics into style (keep that in ORDER because if there is transparence the z-buffer gives glitches!)
+	public static var font:Font<UiFontStyle>;
+	public static var fontStyle = new UiFontStyle();
+
+	public static var mainStyleBG = RoundBorderStyle.createById(0, 0x0000007a);
+	public static var paramStyleBG = RoundBorderStyle.createById(1, 0x050a0380, 0xddff2205);
+	public static var paramStyleFG = RoundBorderStyle.createById(2);
+
+	public static var selectionStyle = BoxStyle.createById(0, Color.GREY3);
+	public static var cursorStyle = BoxStyle.createById(1, 0xaa2211ff);
 
 	public function new(peoteView:PeoteView, defaultParams:DefaultParams, formulaParams:FormulaParams, formula:String, sequence:String, onInit:Void->Void)
 	{
@@ -64,16 +66,14 @@ class Ui
 
 		// ---- layer styles props -----
 		
-		fontStyle.color = 0xc0f232ff;
-		roundStyle.borderRadius = 7;
-		
+		fontStyle.color = 0xc0f232ff;		
 		
 		// -------------------------------------------------------
 		// --- PeoteUIDisplay with styles in Layer-Depth-Order ---
 		// -------------------------------------------------------
 		
 		peoteUiDisplay = new PeoteUIDisplay(0, 0, peoteView.width, peoteView.height,
-			[ boxStyle, roundStyle, selectionStyle, fontStyle, cursorStyle ]
+			[ mainStyleBG, paramStyleBG, paramStyleFG, selectionStyle, fontStyle, cursorStyle ]
 		);
 		peoteView.addDisplay(peoteUiDisplay);
 		
@@ -100,7 +100,7 @@ class Ui
 			peoteView.width - widthBeforeOverflow, 3,
 			widthBeforeOverflow, 400,
 			{
-				backgroundStyle:roundStyle.copy(0x00002266),
+				backgroundStyle:mainStyleBG,
 				resizeType:ResizeType.LEFT|ResizeType.BOTTOM|ResizeType.BOTTOM_LEFT,
 				backgroundSpace:{top: -3, bottom: -3}, // TODO: adjust the resizers also into ui-lib!
 				minWidth:130, minHeight:100
@@ -138,8 +138,7 @@ class Ui
 		// ------------------------------------
 		
 		mainSlider = new UISlider(peoteView.width - 20, 0, 20, mainArea.height, {
-			// backgroundStyle: roundStyle.copy(Color.GREY2),
-			draggerStyle: roundStyle.copy(0x072303bb, 0x77aa22dd, 1),
+			draggerStyle: paramStyleFG.copy(0x071508bb, 0x7aa02add, 1),
 			draggerSize:14,
 			draggSpace:1,
 		});

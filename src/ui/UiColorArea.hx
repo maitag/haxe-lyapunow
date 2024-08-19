@@ -36,7 +36,7 @@ class UiColorArea extends UIArea implements ParentElement
 		var labelWidth:Int = 120;
 		
 		var labelTextConfig:TextConfig = {
-			backgroundStyle:Ui.roundStyle.copy(0x11150f44, null, 0.0),
+			backgroundStyle:Ui.paramStyleFG.copy(0x11150f44, null, 0.0),
 			textSpace: { left:5, right:5, top:1, bottom:1 }
 		}
 		
@@ -59,7 +59,7 @@ class UiColorArea extends UIArea implements ParentElement
 		// ---------------------------
 		
 		var sliderConfig:SliderConfig = {
-			draggerStyle: Ui.roundStyle.copy(0xbbdd22bb),
+			draggerStyle: Ui.paramStyleFG.copy(0xbbdd22bb),
 			
 			draggerLength:30,
 			draggerLengthPercent:0.1,

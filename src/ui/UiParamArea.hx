@@ -15,9 +15,7 @@ import Param;
 class UiParamArea extends UIArea implements ParentElement
 {
 	public var labelText:UITextLine<UiFontStyle>;
-	public var startInput:UITextLine<UiFontStyle>;
 	public var valueInput:UITextLine<UiFontStyle>;
-	public var endInput:UITextLine<UiFontStyle>;
 	public var slider:UISlider;
 
 	public var param:Param;
@@ -34,7 +32,7 @@ class UiParamArea extends UIArea implements ParentElement
 		var labelWidth:Int = 120;
 		
 		var labelTextConfig:TextConfig = {
-			backgroundStyle:Ui.roundStyle.copy(0x11150f44, null, 0.0),
+			backgroundStyle:Ui.paramStyleFG.copy(0x11150f44, null, 0.0),
 			textSpace: { left:5, right:5, top:1, bottom:1 }
 		}
 		
@@ -55,7 +53,7 @@ class UiParamArea extends UIArea implements ParentElement
 		// -----------------------------------------------------
 		
 		var paramTextConfig:TextConfig = {
-			backgroundStyle:Ui.roundStyle.copy(0x00000044, null, 0.0),
+			backgroundStyle:Ui.paramStyleFG.copy(0x00000044, null, 0.0),
 			selectionStyle: Ui.selectionStyle,
 			cursorStyle: Ui.cursorStyle,
 			textSpace: { left:5, right:5, top:1, bottom:1 },
@@ -98,38 +96,13 @@ class UiParamArea extends UIArea implements ParentElement
 		
 		add(valueInput);
 
-		// --------------valueStart --------------------
-
-		startInput = new UITextLine<UiFontStyle>(labelWidth, 1,
-			width - labelWidth - 1,
-			Std.int(Ui.fontStyle.height) + paramTextConfig.textSpace.top + paramTextConfig.textSpace.bottom,
-			('${param.valueStart}':String),
-			Ui.font, Ui.fontStyle, paramTextConfig
-		);
-		
-		startInput.onPointerDown = function(t, e) {
-			t.setInputFocus(e);			
-			t.startSelection(e);
-		}
-		
-		startInput.onPointerUp = function(t, e) {
-			t.stopSelection(e);
-		}
-		
-		startInput.onInsertText = startInput.onDeleteText = function(t, from:Int, to:Int, value:String) {
-			trace("startInput on change",from, to, value);
-		}
-		// add(startInput);
-		
-		// TODO: value end
-
 		// ---------------------------
 		// -------- slider -----------
 		// ---------------------------
 		
 		var sliderConfig:SliderConfig = {
-			// backgroundStyle: roundStyle,
-			draggerStyle: Ui.roundStyle.copy(0xbbdd22bb),
+			
+			draggerStyle: Ui.paramStyleFG.copy(0xbbdd22bb),
 			
 			//vertical:true,
 			//reverse:true,
@@ -173,22 +146,12 @@ class UiParamArea extends UIArea implements ParentElement
 		
 		// slider.updateDragger();
 		
-		
-
-		
-
-
-
-
-
-
 
 
 		// --- re-arrange inner content if area size is changing ---
 		
 		// TODO: outside ?
 		onResizeWidth = (_, width:Int, deltaWidth:Int) -> {
-			startInput.width = width - labelWidth - 1;
 			valueInput.width = width - labelWidth - 1;
 
 			slider.width = width - 2;
