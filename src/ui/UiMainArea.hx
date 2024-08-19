@@ -260,13 +260,15 @@ class UiMainArea extends UIArea implements ParentElement
 		iterPreArea.y += y_offset;
 		iterMainArea.y += y_offset;
 		balanceArea.y += y_offset;
+		colorPosArea.y += y_offset;
+		colorMidArea.y += y_offset;
+		colorNegArea.y += y_offset;
 
 		updateInnerSize();
 		maxHeight = innerHeight + 6;
 		height += y_offset;
 
 		updateLayout();
-
 	}
 
 	public function removeFormulaParam(p:String) {
@@ -287,6 +289,9 @@ class UiMainArea extends UIArea implements ParentElement
 		iterPreArea.y -= y_offset;
 		iterMainArea.y -= y_offset;
 		balanceArea.y -= y_offset;
+		colorPosArea.y -= y_offset;
+		colorMidArea.y -= y_offset;
+		colorNegArea.y -= y_offset;
 
 		updateInnerSize();
 		maxHeight = innerHeight + 6;

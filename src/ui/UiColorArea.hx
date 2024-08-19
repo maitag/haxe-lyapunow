@@ -50,7 +50,7 @@ class UiColorArea extends UIArea implements ParentElement
 			label,
 			Ui.font, fontStyleLabel, labelTextConfig
 		);
-		labelText.onPointerDown = (_, e:PointerEvent)-> {trace("LATER");};
+		// labelText.onPointerDown = (_, e:PointerEvent)-> {trace("LATER");};
 		add(labelText);
 		
 

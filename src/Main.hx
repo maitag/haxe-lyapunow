@@ -172,7 +172,9 @@ class Main extends Application
 				var params = f.params();
 
 				// check for removed parameters inside formula
-				for (p in formulaParams.keys()) {
+				var _formulaParamsKeys:Array<String> = [for (p in formulaParams.keys()) p]; // better this to not confuse the map-iterator into loop! 
+				for (p in _formulaParamsKeys) {
+				// for (p in formulaParams.keys()) {
 					if (params.indexOf(p) < 0  &&  sequence.indexOf(p) < 0) {
 						// trace('remove param "$p"');
 						oldUsedParams.set(p, formulaParams.get(p)); // store it for later usage

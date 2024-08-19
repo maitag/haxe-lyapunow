@@ -109,8 +109,12 @@ class Ui
 		peoteUiDisplay.add(mainArea);
 		
 		mainArea.onResizeHeight = (_, height:Int, deltaHeight:Int) -> {
-
-			if (height > peoteUiDisplay.height - 6) height = peoteUiDisplay.height - 6;
+			trace(height, peoteUiDisplay.height);
+			if (height > peoteUiDisplay.height - 6) {
+				height = peoteUiDisplay.height - 6;
+				mainArea.height = height;
+				
+			}
 
 			mainSlider.height = height+6;
 			mainSlider.updateLayout();

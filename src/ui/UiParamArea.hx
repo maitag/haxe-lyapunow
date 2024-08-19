@@ -47,8 +47,7 @@ class UiParamArea extends UIArea implements ParentElement
 			Std.int(Ui.fontStyle.height) + labelTextConfig.textSpace.top + labelTextConfig.textSpace.bottom,
 			param.label, Ui.font, fontStyleLabel, labelTextConfig
 		);
-		// start/stop area-dragging
-		labelText.onPointerDown = (_, e:PointerEvent)-> {trace("switch");};
+		// labelText.onPointerDown = (_, e:PointerEvent)-> {trace("switch");};
 		add(labelText);
 		
 		// -----------------------------------------------------
