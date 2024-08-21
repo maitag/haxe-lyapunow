@@ -86,6 +86,9 @@ class UiMainArea extends UIArea implements ParentElement
 			Ui.formula,
 			Ui.font, Ui.fontStyle, textConfig
 		);
+
+		formulaInput.restrictedChars = "a-zA-Z0-9.*+-%/()^,";
+
 		formulaInput.onPointerDown = function(t, e) {
 			t.setInputFocus(e);			
 			t.startSelection(e);
@@ -109,7 +112,10 @@ class UiMainArea extends UIArea implements ParentElement
 			Std.int(Ui.fontStyle.height) + textConfig.textSpace.top + textConfig.textSpace.bottom,
 			Ui.sequence,
 			Ui.font, Ui.fontStyle, textConfig
-		);		
+		);
+
+		sequenceInput.restrictedChars = "abcdefghjklmopqrstuvwxyz";
+		
 		sequenceInput.onPointerDown = function(t, e) {
 			t.setInputFocus(e);			
 			t.startSelection(e);
@@ -122,10 +128,6 @@ class UiMainArea extends UIArea implements ParentElement
 			Ui.sequence = t.text;
 			Ui.sequenceChanged = true;
 		}
-
-		// Todo: 
-		// sequenceInput.onChange
-		
 		add(sequenceInput);
 		
 

@@ -104,7 +104,7 @@ class Main extends Application
 
 			// check for removed parameters
 			for (c in sequence) {
-				if ( c != "x" && c != "x" && Ui.sequence.indexOf(c) < 0  &&  formula.hasParam(c) == false ) {
+				if ( c != "x" && c != "y" && Ui.sequence.indexOf(c) < 0  &&  formula.hasParam(c) == false ) {
 					// trace('remove sequence param "$c"');
 					oldUsedParams.set(c, formulaParams.get(c)); // store it for later usage
 					formulaParams.remove(c);
@@ -130,7 +130,7 @@ class Main extends Application
 				}					
 				sequence.push(c);
 			}
-
+			
 			if (found_x && found_y) {
 				updateShader = true;
 			}

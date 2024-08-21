@@ -109,7 +109,6 @@ class Ui
 		peoteUiDisplay.add(mainArea);
 		
 		mainArea.onResizeHeight = (_, height:Int, deltaHeight:Int) -> {
-			trace(height, peoteUiDisplay.height);
 			if (height > peoteUiDisplay.height - 6) {
 				height = peoteUiDisplay.height - 6;
 				mainArea.height = height;

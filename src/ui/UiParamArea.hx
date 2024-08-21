@@ -69,6 +69,8 @@ class UiParamArea extends UIArea implements ParentElement
 			Ui.font, Ui.fontStyle, paramTextConfig
 		);
 		
+		valueInput.restrictedChars = "0-9.-";
+
 		valueInput.onPointerDown = function(t, e) {
 			t.setInputFocus(e);			
 			t.startSelection(e);
