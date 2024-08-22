@@ -77,12 +77,16 @@ class Main extends Application
 		
 	}
 	
+	var uiInit = false;
+
 	public function onUIInit() 
 	{
 		trace("onUiInit");
 
 		Lyapunow.init(lyapunowDisplay, formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
 
+		uiInit = true;
+		
 		// var timer = new haxe.Timer(1000); timer.run = updateTime;
 	}	
 
@@ -321,9 +325,10 @@ class Main extends Application
 
 	// -------------- other WINDOWS EVENTS ----------------------------
 	override function onWindowResize (width:Int, height:Int):Void {
+		if (!uiInit) return;
 		lyapunowDisplay.width = width;
 		lyapunowDisplay.height = height;
-		if (ui != null) ui.resize(width, height);
+		ui.resize(width, height);
 	}
 	
 }
