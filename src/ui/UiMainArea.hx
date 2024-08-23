@@ -87,7 +87,7 @@ class UiMainArea extends UIArea implements ParentElement
 			Ui.font, Ui.fontStyle, textConfig
 		);
 
-		formulaInput.restrictedChars = "a-zA-Z0-9.*+-%/()^,";
+		formulaInput.restrictedChars = "a-zA-Z0-9.*+-/()^, ";
 
 		formulaInput.onPointerDown = function(t, e) {
 			t.setInputFocus(e);			

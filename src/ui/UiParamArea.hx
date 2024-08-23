@@ -1,5 +1,6 @@
 package ui;
 
+import lime.ui.MouseCursor;
 import peote.ui.interactive.UITextLine;
 import peote.ui.interactive.UIArea;
 import peote.ui.interactive.UISlider;
@@ -80,22 +81,51 @@ class UiParamArea extends UIArea implements ParentElement
 			t.stopSelection(e);
 		}
 		
-		valueInput.onInsertText = valueInput.onDeleteText = function(t, from:Int, to:Int, s:String) {
-			var v:Float = Std.parseFloat(valueInput.text);
-			if (v < slider.valueStart) {
+		valueInput.onInsertText = valueInput.onDeleteText = function(t:UITextLine<UiFontStyle>, from:Int, to:Int, s:String) {
+			var value:Float = Std.parseFloat(t.text);
+			if (value < slider.valueStart) {
 				slider.setValue( slider.valueStart, false);
 				onChange(slider.valueStart);
 			}
-			else if (v > slider.valueEnd ) {
+			else if (value > slider.valueEnd ) {
 				slider.setValue(slider.valueEnd, false);
 				onChange(slider.valueEnd);
 			}
-			else if (!Math.isNaN(v)) {
-				slider.setValue(v, false);
-				onChange(v);
+			else if (!Math.isNaN(value)) {
+				slider.setValue(value, false);
+				onChange(value);
 			}
 		}
 		
+		valueInput.onMouseWheel = function(t:UITextLine<UiFontStyle>, e:WheelEvent ) {
+			var value:Float = Std.parseFloat(t.text);
+
+			var dot_position = t.text.indexOf('.');
+			if (dot_position < 0) dot_position = t.text.length;
+
+			var offset:Float = 0.0;
+
+			var exponent:Int = t.cursor - dot_position;
+
+			if (exponent == 0) exponent++;
+			if (exponent > 0) {
+				offset = 1/(Math.pow(10,exponent));
+			}
+			else {
+				exponent = - exponent - 1;
+				offset = Math.pow(10,exponent);
+			}
+
+			if (e.deltaY > 0) value += offset else value -= offset;
+
+			// OK, the LOGIC works -> now only need to update the text ;:)
+			t.setText(('$value':String));
+			t.xOffset = 0;
+			t.updateVisibleLayout();
+			slider.setValue(value, false);
+			onChange(value);
+		}
+
 		add(valueInput);
 
 		// ---------------------------

@@ -95,7 +95,7 @@ class Main extends Application
 	// ------------------------------------------------------------	
 
 	// function updateTime():Void 
-	override function update(deltaTime:Int):Void 
+	override function update(deltaTime:Int):Void
 	{
 		var updateShader = false;
 
