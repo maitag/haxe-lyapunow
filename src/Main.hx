@@ -494,7 +494,7 @@ class Main extends Application
 			}
 		}
 		
-		// updateUrlParams();
+		updateUrlParams();
 	}
 
 	// Dragging --------------------------------------------------
@@ -510,7 +510,7 @@ class Main extends Application
 		dragmode = false;
 		if (changed) {
 			changed = false;
-			// updateUrlParams();
+			updateUrlParams();
 		}
 	}
 	
