@@ -1,5 +1,6 @@
 package ui;
 
+import peote.ui.interactive.UIElement;
 import lime.ui.MouseCursor;
 import peote.ui.interactive.UITextLine;
 import peote.ui.interactive.UIArea;
@@ -10,6 +11,7 @@ import peote.ui.config.SliderConfig;
 import peote.ui.event.PointerEvent;
 import peote.ui.event.WheelEvent;
 import peote.ui.interactive.interfaces.ParentElement;
+import peote.ui.config.HAlign;
 
 import Param;
 
@@ -30,7 +32,7 @@ class UiParamArea extends UIArea implements ParentElement
 
 		super(xPosition, yPosition, width, height, zIndex, config);
 		
-		var labelWidth:Int = 120;
+		var labelWidth:Int = 112;
 		
 		var labelTextConfig:TextConfig = {
 			backgroundStyle:Ui.paramStyleFG.copy(0x11150f44, null, 0.0),
@@ -50,9 +52,79 @@ class UiParamArea extends UIArea implements ParentElement
 		add(labelText);
 		
 		// -----------------------------------------------------
-		// ------------ number input ---------------------------
-		// -----------------------------------------------------
+		// ------------ start/end buttons ----------------------
+		// -----------------------------------------------------	
+
+		var buttonWidth:Int = 18;
+		var buttonBgStyle = Ui.paramStyleFG.copy(0x00000044, 0xaaaa3344, 1.0);
+		var buttonBgStyleOver = buttonBgStyle.copy(0x332a01a0);
+
+		var buttonFontStyle = Ui.fontStyle.copy(0xbbc041e0);
+		var buttonFontStyleDown = buttonFontStyle.copy(0xe0ec41e0);
+
+		var paramButtonConfig:TextConfig = {
+			backgroundStyle:buttonBgStyle,
+			textSpace: { left:1, right:1, top:1, bottom:1 },
+			hAlign:HAlign.CENTER
+		}
+
+		// ---------- button to set start value --------------
+		var buttonStart = new UITextLine<UiFontStyle>(labelWidth, 1,
+			buttonWidth,
+			Std.int(Ui.fontStyle.height) + paramButtonConfig.textSpace.top + paramButtonConfig.textSpace.bottom - 1,
+			"<",
+			Ui.font, buttonFontStyle, paramButtonConfig
+		);
 		
+		buttonStart.onPointerClick = function(_, _) {
+			var value = Std.parseFloat(valueInput.text);
+			if (Math.isNaN(value)) return;
+
+			if (param.minStart != null && value < param.minStart) value = param.minStart;
+			if (param.maxEnd != null && value >= param.maxEnd) value = param.maxEnd-0.1;
+
+			param.valueStart = slider.valueStart = value;
+			if (value >= param.valueEnd) param.valueEnd =  slider.valueEnd = value+0.1;
+			slider.setValue(value, false,false);
+		}
+
+		buttonStart.onPointerOver = function(t:UITextLine<UiFontStyle>, _) t.backgroundStyle = buttonBgStyleOver;
+		buttonStart.onPointerOut = function(t:UITextLine<UiFontStyle>, _) t.backgroundStyle = buttonBgStyle;
+		buttonStart.onPointerDown = function(t:UITextLine<UiFontStyle>, _) {t.fontStyle = buttonFontStyleDown; t.updateStyle();}
+		buttonStart.onPointerUp = function(t:UITextLine<UiFontStyle>, _) {t.fontStyle = buttonFontStyle; t.updateStyle();}
+
+		add(buttonStart);
+
+		// ---------- button to set start value --------------
+		var buttonEnd = new UITextLine<UiFontStyle>(labelWidth + buttonWidth, 1,
+			buttonWidth,
+			Std.int(Ui.fontStyle.height) + paramButtonConfig.textSpace.top + paramButtonConfig.textSpace.bottom - 1,
+			">",
+			Ui.font, buttonFontStyle, paramButtonConfig
+		);
+		
+		buttonEnd.onPointerClick = function(_, _) {
+			var value = Std.parseFloat(valueInput.text);
+			if (Math.isNaN(value)) return;
+
+			if (param.maxEnd != null && value >= param.maxEnd) value = param.maxEnd;
+			if (param.minStart != null && value < param.minStart) value = param.minStart+0.1;
+
+			param.valueEnd = slider.valueEnd = value;
+			if (value <= param.valueStart) param.valueStart =  slider.valueStart = value-0.1;
+			slider.setValue(value, false,false);
+		}
+
+		buttonEnd.onPointerOver = function(t:UITextLine<UiFontStyle>, _) t.backgroundStyle = buttonBgStyleOver;
+		buttonEnd.onPointerOut = function(t:UITextLine<UiFontStyle>, _) t.backgroundStyle = buttonBgStyle;
+		buttonEnd.onPointerDown = function(t:UITextLine<UiFontStyle>, _) {t.fontStyle = buttonFontStyleDown; t.updateStyle();}
+		buttonEnd.onPointerUp = function(t:UITextLine<UiFontStyle>, _) {t.fontStyle = buttonFontStyle; t.updateStyle();}
+
+		add(buttonEnd);
+
+		// -----------------------------------------------------
+		// ------------ number input ---------------------------
+		// -----------------------------------------------------	
 		var paramTextConfig:TextConfig = {
 			backgroundStyle:Ui.paramStyleFG.copy(0x00000044, null, 0.0),
 			selectionStyle: Ui.selectionStyle,
@@ -63,8 +135,8 @@ class UiParamArea extends UIArea implements ParentElement
 		
 		// --------  value ----------
 		
-		valueInput = new UITextLine<UiFontStyle>(labelWidth, 1,
-			width - labelWidth - 1,
+		valueInput = new UITextLine<UiFontStyle>(labelWidth + buttonWidth + buttonWidth, 1,
+			width - labelWidth - 1 - buttonWidth  - buttonWidth,
 			Std.int(Ui.fontStyle.height) + paramTextConfig.textSpace.top + paramTextConfig.textSpace.bottom,
 			('${param.value}':String),
 			Ui.font, Ui.fontStyle, paramTextConfig
@@ -83,13 +155,19 @@ class UiParamArea extends UIArea implements ParentElement
 		
 		valueInput.onInsertText = valueInput.onDeleteText = function(t:UITextLine<UiFontStyle>, from:Int, to:Int, s:String) {
 			var value:Float = Std.parseFloat(t.text);
+			if (param.minStart != null && value < param.minStart) value = param.minStart;
+			if (param.maxEnd != null && value > param.maxEnd) value = param.maxEnd;
 			if (value < slider.valueStart) {
 				slider.setValue( slider.valueStart, false);
-				onChange(slider.valueStart);
+				// onChange(slider.valueStart);
+				// TODO: minValue
+				onChange(value);
 			}
 			else if (value > slider.valueEnd ) {
 				slider.setValue(slider.valueEnd, false);
-				onChange(slider.valueEnd);
+				// onChange(slider.valueEnd);
+				// TODO: maxValue
+				onChange(value);
 			}
 			else if (!Math.isNaN(value)) {
 				slider.setValue(value, false);

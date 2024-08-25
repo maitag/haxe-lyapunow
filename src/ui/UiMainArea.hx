@@ -247,7 +247,6 @@ class UiMainArea extends UIArea implements ParentElement
 			{ backgroundStyle:Ui.paramStyleBG.copy() }
 		);
 		add(paramArea);
-		trace(z, paramArea.z, paramArea.labelText.z, paramArea.valueInput.z);
 		return paramArea;
 	}
 

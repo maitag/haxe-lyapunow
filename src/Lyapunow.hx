@@ -18,9 +18,15 @@ class Lyapunow implements Element
 	@sizeX @varying @const @formula("uResolution.x") var w:Int;
 	@sizeY @varying @const @formula("uResolution.y") var h:Int;
 
-	@color var posColor:Color = 0xff0000ff;
-	@color var midColor:Color = 0x000000ff;
-	@color var negColor:Color = 0x0000ffff;
+	@color public var posColor:Color = 0xff0000ff;
+	@color public var midColor:Color = 0x000000ff;
+	@color public var negColor:Color = 0x0000ffff;
+
+	public function new(posColor:Color, midColor:Color, negColor:Color) {
+		this.posColor = posColor;
+		this.midColor = midColor;
+		this.negColor = negColor;
+	}
 	// --------------------------------------------------------------------------	
 	
 	static public var buffer:Buffer<Lyapunow>;
@@ -29,7 +35,8 @@ class Lyapunow implements Element
 	
 	static public function init(display:Display, formula:Formula, sequence:Array<String>,
 		positionX:UniformFloat, positionY:UniformFloat, scaleX:UniformFloat, scaleY:UniformFloat, 
-		defaultParams:DefaultParams, formulaParams:FormulaParams)
+		defaultParams:DefaultParams, formulaParams:FormulaParams,
+		posColor:Color, midColor:Color, negColor:Color)
 	{	
 		buffer = new Buffer<Lyapunow>(1);
 		program = new Program(buffer);
@@ -40,7 +47,7 @@ class Lyapunow implements Element
 		
 		display.addProgram(program);
 
-		element = new Lyapunow();
+		element = new Lyapunow(posColor, midColor, negColor);
         buffer.addElement( element );
 	}
 

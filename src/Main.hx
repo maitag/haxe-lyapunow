@@ -1,11 +1,21 @@
 package;
 
+#if html5
+import js.Browser;
+#end
+
+import haxe.io.BytesInput;
+import haxe.io.BytesOutput;
+import haxe.io.Bytes;
+import haxe.crypto.Base64;
+
 import lime.app.Application;
 import lime.ui.Window;
 import lime.ui.MouseButton;
 import lime.ui.MouseWheelMode;
 import lime.ui.KeyCode;
 import lime.ui.KeyModifier;
+import lime.ui.Touch;
 
 import peote.view.*;
 
@@ -29,10 +39,17 @@ class Main extends Application
 	
 	var defaultParams:DefaultParams;
 	var formulaParams = new FormulaParams();
+	var formulaParamsLength:Int = 2;
 	var oldUsedParams = new FormulaParams();
 	
 	var formula:Formula;
+	var formulaString:String;
+	var formulaBytes:Bytes = null;
 	var sequence:Array<String>;
+
+	var posColor:Int = Color.RED;
+	var midColor:Int = Color.BLACK;
+	var negColor:Int = Color.BLUE;
 
 	override function onWindowCreate():Void
 	{
@@ -57,18 +74,19 @@ class Main extends Application
 		scaleY = new UniformFloat("uScaleY", 1.0);
 
 		defaultParams = {
-			startIndex: new Param( "Start index:"   , "uStartIndex", 0, -10,  10 ),
-			iterPre:    new Param( "Pre-iteration:" , "uIterPre"   , 0,   0,  20 ),
-			iterMain:   new Param( "Main-iteration:", "uIterMain"  , 3,   1, 200 ),
+			startIndex: new Param( "Start index:"   , "uStartIndex", 0, -10,  10),
+			iterPre:    new Param( "Pre-iteration:" , "uIterPre"   , 0,   0,  20, 0, 300 ),
+			iterMain:   new Param( "Main-iteration:", "uIterMain"  , 3,   1, 200, 1, 500),
 			balance:    new Param( "Balance:"       , "uBalance"   , 1,  -1,   3 ),
 		};
 		
 		formulaParams = [
-			"a" => new Param( "a:" , "uParama", 2.5, 0.0, 10 ),
-			"b" => new Param( "b:" , "uParamb", 2.0, 0.0, 10 )
+			"a" => new Param( "a:" , "uParama", 2.5, -5, 5 ),
+			"b" => new Param( "b:" , "uParamb", 2.0, -5, 5 )
 		];
 
-		formula = "a*sin(i+n)^2+b";
+		formulaString = "a*sin(i+n)^2+b";
+		formula = formulaString;
 		for (p in formulaParams.keys()) formula.bind( ("uParam"+p : Formula), p);
 		
 		sequence = ["x", "y"];
@@ -83,13 +101,177 @@ class Main extends Application
 	{
 		trace("onUiInit");
 
-		Lyapunow.init(lyapunowDisplay, formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
+		Lyapunow.init(lyapunowDisplay, formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams, posColor, midColor, negColor);
 
 		uiInit = true;
 		
 		// var timer = new haxe.Timer(1000); timer.run = updateTime;
 	}	
 
+	// ------------------------------------------------
+	// --------------- URL handling -------------------
+	// ------------------------------------------------
+
+	inline function updateUrlParams()
+		{	
+			#if html5
+			var b:BytesOutput = serializeParams();
+			var base64:String = Base64.encode(b.getBytes(), false);
+			Browser.window.history.replaceState('haxelyapunow', 'haxelyapunow', Browser.location.pathname + '?' + base64);
+			#else
+			// for testing only:
+			var bytes = serializeParams().getBytes();
+			trace(Base64.encode(bytes, false));
+			unSerializeParams(new BytesInput(bytes));
+			#end
+		}
+		
+		public function serializeParams():BytesOutput
+		{
+			var b = new BytesOutput();
+			b.writeFloat(positionX.value);
+			b.writeFloat(positionY.value);
+			b.writeFloat(scaleX.value);
+			b.writeFloat(scaleY.value);
+	
+			b.writeFloat(defaultParams.startIndex.value);
+			b.writeFloat(defaultParams.startIndex.valueStart);
+			b.writeFloat(defaultParams.startIndex.valueEnd);
+
+			b.writeFloat(defaultParams.iterPre.value);
+			b.writeFloat(defaultParams.iterPre.valueStart);
+			b.writeFloat(defaultParams.iterPre.valueEnd);
+
+			b.writeFloat(defaultParams.iterMain.value);
+			b.writeFloat(defaultParams.iterMain.valueStart);
+			b.writeFloat(defaultParams.iterMain.valueEnd);
+
+			b.writeFloat(defaultParams.balance.value);
+			b.writeFloat(defaultParams.balance.valueStart);
+			b.writeFloat(defaultParams.balance.valueEnd);
+	
+			b.writeInt32(Lyapunow.element.negColor);
+			b.writeInt32(Lyapunow.element.midColor);
+			b.writeInt32(Lyapunow.element.posColor);
+	
+			// Sequence
+			_writeString(sequence.join(""), b);
+
+			// Formula
+			_writeString(formulaString, b);
+	
+			// Formulas param values
+			var params = formula.params();
+			for (p in params) {
+				if (p == "i" || p == "n" || p == "x" || p == "y") continue;
+				var fp = formulaParams.get(p);
+				b.writeFloat(fp.value);
+				b.writeFloat(fp.valueStart);
+				b.writeFloat(fp.valueEnd);
+			}
+
+	
+			return(b);
+		}
+		
+		inline function _writeString(s:String, b:BytesOutput):Void {
+			b.writeByte((s.length<255) ? s.length: 255);
+			for (i in 0...((s.length<255) ? s.length: 255)) b.writeByte(s.charCodeAt(i));
+		}
+
+		static inline function _readString(b:BytesInput):String {
+			var len:Int = b.readByte();
+			var s:String = "";
+			for (i in 0...len) s += String.fromCharCode(b.readByte());
+			return s;
+		}
+					
+		public function unSerializeParams(b:BytesInput)
+		{
+			//todo: TRY CATCH
+	
+			positionX.value = b.readFloat();
+			positionY.value = b.readFloat();
+			scaleX.value = b.readFloat();
+			scaleY.value = b.readFloat();
+	
+			defaultParams.startIndex.value = b.readFloat();
+			defaultParams.startIndex.valueStart = b.readFloat();
+			defaultParams.startIndex.valueEnd = b.readFloat();
+
+			defaultParams.iterPre.value = b.readFloat();
+			defaultParams.iterPre.valueStart = b.readFloat();
+			defaultParams.iterPre.valueEnd = b.readFloat();
+
+			defaultParams.iterMain.value = b.readFloat();
+			defaultParams.iterMain.valueStart = b.readFloat();
+			defaultParams.iterMain.valueEnd = b.readFloat();
+
+			defaultParams.balance.value = b.readFloat();
+			defaultParams.balance.valueStart = b.readFloat();
+			defaultParams.balance.valueEnd = b.readFloat();
+	
+			negColor = b.readInt32();
+			midColor = b.readInt32();
+			posColor = b.readInt32();
+
+			trace("AFTER UNSERIALIZATION AGAIN:");
+
+			// Sequence
+			sequence = _readString(b).split("");
+			trace(sequence);
+
+			// Formula
+			formulaString = _readString(b);
+			trace(formulaString);
+
+			// Formulas param values
+			var f:Formula = formulaString;
+			for (p in f.params()) {
+				if (p == "i" || p == "n" || p == "x" || p == "y") continue;
+				trace(p);
+				// f.bind( ("uParam"+p : Formula), p);
+				// formulaParams.set( p, new Param(p, "uParam"+p, b.readFloat(), b.readFloat(), b.readFloat(), -5, 5) );
+			}
+		}
+		
+		
+		inline function getUrlParams()
+		{
+			#if html5
+			var e:EReg = new EReg("\\?([" + Base64.CHARS + "]+)$", "");
+			if (e.match(Browser.document.URL)) {
+				var bytes:Bytes = Base64.decode( e.matched(1) , false);
+				var b:BytesInput = new BytesInput(bytes);
+	
+				trace("URL params length",b.length);
+	
+				// if (b.length >= 33) {
+					/*
+					unSerializeParams(b);
+					//read rest into formula
+					trace("rest of length", b.length);
+	
+					// if (b.length > 33) {
+						var o = new BytesOutput();
+						o.writeBytes(bytes, b.position, (b.length - 33));
+						//trace("o:", o);
+						formulaBytes = o.getBytes();
+						try {
+							updateFormula(Formula.fromBytes(formulaBytes));
+							ui.formula.text = formula;
+						} catch (msg:String) {
+							trace("ERROR: can not parse formula from url-parameters");
+						}
+						*/
+					// }
+				// }
+			}
+			#end
+		}
+	
+	
+	
 	// ------------------------------------------------------------
 	// ----------------- LIME EVENTS ------------------------------
 	// ------------------------------------------------------------	
@@ -112,6 +294,7 @@ class Main extends Application
 					// trace('remove sequence param "$c"');
 					oldUsedParams.set(c, formulaParams.get(c)); // store it for later usage
 					formulaParams.remove(c);
+					formulaParamsLength--;
 					ui.removeFormulaParam(c); // remove that widget by UI
 				}
 			}
@@ -127,8 +310,9 @@ class Main extends Application
 				if (c == "x") found_x = true;
 				else if (c == "y") found_y = true;
 				else if ( ! formulaParams.exists(c)) {
-					var param:Param = (oldUsedParams.exists(c)) ? oldUsedParams.get(c) : new Param(c, "uParam"+c, 0.0, -10, 10);
+					var param:Param = (oldUsedParams.exists(c)) ? oldUsedParams.get(c) : new Param(c, "uParam"+c, 0.0, -5, 5);
 					formulaParams.set( c, param );
+					formulaParamsLength++;
 					// add new widget by UI !
 					ui.addFormulaParam(c, param);
 				}					
@@ -183,6 +367,7 @@ class Main extends Application
 						// trace('remove param "$p"');
 						oldUsedParams.set(p, formulaParams.get(p)); // store it for later usage
 						formulaParams.remove(p);
+						formulaParamsLength--;
 						ui.removeFormulaParam(p); // remove that widget by UI
 					}
 				}
@@ -201,9 +386,9 @@ class Main extends Application
 								break;
 							}
 							
-							var param:Param = (oldUsedParams.exists(p)) ? oldUsedParams.get(p) : new Param(p, "uParam"+p, 0.0, 0.0, 1.0);
+							var param:Param = (oldUsedParams.exists(p)) ? oldUsedParams.get(p) : new Param(p, "uParam"+p, 0.0, -5, 5);
 							formulaParams.set( p, param );
-
+							formulaParamsLength++;
 							// add new widget by UI !
 							ui.addFormulaParam(p, param);
 						}
@@ -214,6 +399,7 @@ class Main extends Application
 
 				if (found_i && found_n && param_length_ok) {
 					formula = f;
+					formulaString = Ui.formula;
 					updateShader = true;
 				}
 				else {
@@ -227,17 +413,12 @@ class Main extends Application
 		if (updateShader) {
 			// call lyapunows update function
 			Lyapunow.updateShader(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
+			updateUrlParams();
 		}
 
 	}
 
-	// override function onMouseMoveRelative (x:Float, y:Float):Void {}
 
-	// ----------------- TOUCH EVENTS ------------------------------
-	// override function onTouchStart (touch:lime.ui.Touch):Void {}
-	// override function onTouchMove (touch:lime.ui.Touch):Void	{}
-	// override function onTouchEnd (touch:lime.ui.Touch):Void {}
-	
 	// ----------------- KEYBOARD EVENTS ---------------------------
 	var isShift = false;
 	override function onKeyDown (keyCode:KeyCode, modifier:KeyModifier):Void {
@@ -247,7 +428,10 @@ class Main extends Application
 		if (keyCode == KeyCode.LEFT_SHIFT || keyCode == KeyCode.RIGHT_SHIFT) isShift = false;
 	}
 	
-	//THANK u BloooddSWEATbeers ;) -> OLD friend (^^)*hugs
+	// ----------------- TOUCH and MOUSE EVENTS ------------------------------
+	var checkFirstTouch = true;
+	var isTouch = false;
+
 	var mouse_x:Float = 0;
 	var mouse_y:Float = 0;
 	var dragstart_x:Float = 0;
@@ -257,16 +441,28 @@ class Main extends Application
 	var zoom:Float = 1.0;
 	var zoomstep:Float = 1.2;
 
+	override function onTouchStart (touch:Touch):Void {
+		if (checkFirstTouch) {checkFirstTouch = false; isTouch = true;}
+		if (isTouch) startDrag(touch.x, touch.y);
+	}
+	override function onTouchMove (touch:Touch):Void {
+		if (isTouch) moveDrag(touch.x, touch.y);
+	}
+	override function onTouchEnd (touch:Touch):Void {
+		if (isTouch) stopDrag();
+	}
+	
 	override function onMouseDown(x:Float, y:Float, button:MouseButton):Void {	
-		if ( button == MouseButton.LEFT ) startDrag(x, y);
+		if (checkFirstTouch) checkFirstTouch = false;
+		if (!isTouch) if ( button == MouseButton.LEFT ) startDrag(x, y);
 	}
 	
 	override function onMouseUp(x:Float, y:Float, button:MouseButton):Void {	
-		if ( button == MouseButton.LEFT ) stopDrag();
+		if (!isTouch) if ( button == MouseButton.LEFT ) stopDrag();
 	}
 	
 	override function onMouseMove (x:Float, y:Float):Void {
-		moveDrag(x, y);
+		if (!isTouch) moveDrag(x, y);
 	}
 	
 	override function onMouseWheel (deltaX:Float, deltaY:Float, deltaMode:MouseWheelMode):Void {
