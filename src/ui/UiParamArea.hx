@@ -162,16 +162,19 @@ class UiParamArea extends UIArea implements ParentElement
 				// onChange(slider.valueStart);
 				// TODO: minValue
 				onChange(value);
+				Ui.paramChanged = true;
 			}
 			else if (value > slider.valueEnd ) {
 				slider.setValue(slider.valueEnd, false);
 				// onChange(slider.valueEnd);
 				// TODO: maxValue
 				onChange(value);
+				Ui.paramChanged = true;
 			}
 			else if (!Math.isNaN(value)) {
 				slider.setValue(value, false);
 				onChange(value);
+				Ui.paramChanged = true;
 			}
 		}
 		
@@ -202,6 +205,7 @@ class UiParamArea extends UIArea implements ParentElement
 			t.updateVisibleLayout();
 			slider.setValue(value, false);
 			onChange(value);
+			Ui.paramChanged = true;
 		}
 
 		add(valueInput);
@@ -244,6 +248,7 @@ class UiParamArea extends UIArea implements ParentElement
 			//s.value += e.deltaY * 0.1;
 			//s.setValue (s.value - e.deltaY * 0.05);
 			s.setWheelDelta(1.0 - e.deltaY);
+			Ui.paramChanged = true;
 		}
 		slider.onChange = function(s:UISlider, value:Float, percent:Float) {
 			// trace( 'slider value:$value, percent:$percent' );
@@ -252,6 +257,8 @@ class UiParamArea extends UIArea implements ParentElement
 			valueInput.updateVisibleLayout();
 			onChange(value);
 		}
+		slider.onDraggerPointerUp = (_,_) -> Ui.paramChanged = true;
+
 		add(slider);
 		
 		// slider.updateDragger();

@@ -82,6 +82,7 @@ class UiColorArea extends UIArea implements ParentElement
 			color.rF = value;
 			updateColor(color);
 		}
+		sliderR.onDraggerPointerUp = (_,_) -> Ui.paramChanged = true;
 		sliderR.value = color.rF;
 		add(sliderR);
 		
@@ -96,6 +97,7 @@ class UiColorArea extends UIArea implements ParentElement
 			color.gF = value;
 			updateColor(color);
 		}
+		sliderG.onDraggerPointerUp = (_,_) -> Ui.paramChanged = true;
 		sliderG.value = color.gF;
 		add(sliderG);
 		
@@ -110,6 +112,7 @@ class UiColorArea extends UIArea implements ParentElement
 			color.bF = value;
 			updateColor(color);
 		}
+		sliderB.onDraggerPointerUp = (_,_) -> Ui.paramChanged = true;
 		sliderB.value = color.bF;
 		add(sliderB);
 		
@@ -128,7 +131,4 @@ class UiColorArea extends UIArea implements ParentElement
 
 	}	
 
-	public function onChange(value:Float) {
-		//todo
-	}
 }

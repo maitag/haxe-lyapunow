@@ -47,9 +47,9 @@ class Main extends Application
 	var formulaBytes:Bytes = null;
 	var sequence:Array<String>;
 
-	var posColor:Int = Color.RED;
-	var midColor:Int = Color.BLACK;
-	var negColor:Int = Color.BLUE;
+	var posColor:Color = Color.RED;
+	var midColor:Color = Color.BLACK;
+	var negColor:Color = Color.BLUE;
 
 	override function onWindowCreate():Void
 	{
@@ -68,6 +68,9 @@ class Main extends Application
 		lyapunowDisplay = new Display(0, 0, window.width, window.height);
 		peoteView.addDisplay(lyapunowDisplay);
 
+
+		// ----- param juggling -.-...-....-.-....---
+
 		positionX = new UniformFloat("uPositionX", 0.0);
 		positionY = new UniformFloat("uPositionY", 0.0);
 		scaleX = new UniformFloat("uScaleX", 1.0);
@@ -80,18 +83,37 @@ class Main extends Application
 			balance:    new Param( "Balance:"       , "uBalance"   , 1,  -1,   3 ),
 		};
 		
+		formulaString = "a*sin(i+n)^2+b";
+		formula = formulaString;
+		
+		sequence = ["x", "y"];
+
 		formulaParams = [
 			"a" => new Param( "a:" , "uParama", 2.5, -5, 5 ),
 			"b" => new Param( "b:" , "uParamb", 2.0, -5, 5 )
 		];
 
-		formulaString = "a*sin(i+n)^2+b";
-		formula = formulaString;
-		for (p in formulaParams.keys()) formula.bind( ("uParam"+p : Formula), p);
-		
-		sequence = ["x", "y"];
+		// ------------ only for the html browser --------- 
+		#if html5
+		// fetching all from URL
+		var e:EReg = new EReg("\\?([" + Base64.CHARS + "]+)$", "");
+		if (e.match(Browser.document.URL)) {
+			var bytes:Bytes = Base64.decode( e.matched(1) , false);
+			// TODO: decompress ! 
+			unSerializeParams( new BytesInput(bytes) );
+		}
+		#end // -------------------------------------------
 
-		ui = new Ui(peoteView, defaultParams, formulaParams, "a*sin(i+n)^2+b", "xy", onUIInit);
+		for (p in formulaParams.keys()) formula.bind( ("uParam"+p : Formula), p);
+
+		ui = new Ui(peoteView,
+			defaultParams,
+			formulaParams,
+			posColor, midColor, negColor,
+			formulaString,
+			sequence.join(""),
+			onUIInit
+		);
 		
 	}
 	
@@ -113,165 +135,144 @@ class Main extends Application
 	// ------------------------------------------------
 
 	inline function updateUrlParams()
-		{	
-			#if html5
-			var b:BytesOutput = serializeParams();
-			var base64:String = Base64.encode(b.getBytes(), false);
-			Browser.window.history.replaceState('haxelyapunow', 'haxelyapunow', Browser.location.pathname + '?' + base64);
-			#else
-			// for testing only:
-			var bytes = serializeParams().getBytes();
-			trace(Base64.encode(bytes, false));
-			unSerializeParams(new BytesInput(bytes));
-			#end
+	{	
+		#if html5
+		var b:BytesOutput = serializeParams();
+		var base64:String = Base64.encode(b.getBytes(), false);
+		Browser.window.history.replaceState('haxelyapunow', 'haxelyapunow', Browser.location.pathname + '?' + base64);
+		#else
+		// for testing only:
+		// var bytes = serializeParams().getBytes();
+		// trace(Base64.encode(bytes, false));
+		// unSerializeParams(new BytesInput(bytes));
+		#end
+	}
+	
+	public function serializeParams():BytesOutput
+	{
+		var b = new BytesOutput();
+		b.writeFloat(positionX.value);
+		b.writeFloat(positionY.value);
+		b.writeFloat(scaleX.value);
+		b.writeFloat(scaleY.value);
+
+		b.writeFloat(defaultParams.startIndex.value);
+		b.writeFloat(defaultParams.startIndex.valueStart);
+		b.writeFloat(defaultParams.startIndex.valueEnd);
+
+		b.writeFloat(defaultParams.iterPre.value);
+		b.writeFloat(defaultParams.iterPre.valueStart);
+		b.writeFloat(defaultParams.iterPre.valueEnd);
+
+		b.writeFloat(defaultParams.iterMain.value);
+		b.writeFloat(defaultParams.iterMain.valueStart);
+		b.writeFloat(defaultParams.iterMain.valueEnd);
+
+		b.writeFloat(defaultParams.balance.value);
+		b.writeFloat(defaultParams.balance.valueStart);
+		b.writeFloat(defaultParams.balance.valueEnd);
+
+		b.writeInt32(Lyapunow.element.negColor);
+		b.writeInt32(Lyapunow.element.midColor);
+		b.writeInt32(Lyapunow.element.posColor);
+
+		// Sequence
+		_writeString(sequence.join(""), b);
+
+		// Formula
+		_writeString(formulaString, b);
+
+		// Formulas param values
+		var params = formula.params();
+		for (p in params) {
+			if (p == "i" || p == "n" || p == "x" || p == "y") continue;
+			var fp = formulaParams.get(p);
+			b.writeFloat(fp.value);
+			b.writeFloat(fp.valueStart);
+			b.writeFloat(fp.valueEnd);
 		}
 		
-		public function serializeParams():BytesOutput
-		{
-			var b = new BytesOutput();
-			b.writeFloat(positionX.value);
-			b.writeFloat(positionY.value);
-			b.writeFloat(scaleX.value);
-			b.writeFloat(scaleY.value);
-	
-			b.writeFloat(defaultParams.startIndex.value);
-			b.writeFloat(defaultParams.startIndex.valueStart);
-			b.writeFloat(defaultParams.startIndex.valueEnd);
-
-			b.writeFloat(defaultParams.iterPre.value);
-			b.writeFloat(defaultParams.iterPre.valueStart);
-			b.writeFloat(defaultParams.iterPre.valueEnd);
-
-			b.writeFloat(defaultParams.iterMain.value);
-			b.writeFloat(defaultParams.iterMain.valueStart);
-			b.writeFloat(defaultParams.iterMain.valueEnd);
-
-			b.writeFloat(defaultParams.balance.value);
-			b.writeFloat(defaultParams.balance.valueStart);
-			b.writeFloat(defaultParams.balance.valueEnd);
-	
-			b.writeInt32(Lyapunow.element.negColor);
-			b.writeInt32(Lyapunow.element.midColor);
-			b.writeInt32(Lyapunow.element.posColor);
-	
-			// Sequence
-			_writeString(sequence.join(""), b);
-
-			// Formula
-			_writeString(formulaString, b);
-	
-			// Formulas param values
-			var params = formula.params();
-			for (p in params) {
-				if (p == "i" || p == "n" || p == "x" || p == "y") continue;
-				var fp = formulaParams.get(p);
-				b.writeFloat(fp.value);
-				b.writeFloat(fp.valueStart);
-				b.writeFloat(fp.valueEnd);
-			}
-
-	
-			return(b);
+		// sequence-params what is not used by FORMULA!
+		for (p in sequence) {
+			if (p == "x" || p == "y" || params.indexOf(p) >= 0) continue;
+			var fp = formulaParams.get(p);
+			b.writeFloat(fp.value);
+			b.writeFloat(fp.valueStart);
+			b.writeFloat(fp.valueEnd);
 		}
 		
-		inline function _writeString(s:String, b:BytesOutput):Void {
-			b.writeByte((s.length<255) ? s.length: 255);
-			for (i in 0...((s.length<255) ? s.length: 255)) b.writeByte(s.charCodeAt(i));
-		}
-
-		static inline function _readString(b:BytesInput):String {
-			var len:Int = b.readByte();
-			var s:String = "";
-			for (i in 0...len) s += String.fromCharCode(b.readByte());
-			return s;
-		}
-					
-		public function unSerializeParams(b:BytesInput)
-		{
-			//todo: TRY CATCH
+		return(b);
+	}
 	
-			positionX.value = b.readFloat();
-			positionY.value = b.readFloat();
-			scaleX.value = b.readFloat();
-			scaleY.value = b.readFloat();
-	
-			defaultParams.startIndex.value = b.readFloat();
-			defaultParams.startIndex.valueStart = b.readFloat();
-			defaultParams.startIndex.valueEnd = b.readFloat();
+	inline function _writeString(s:String, b:BytesOutput):Void {
+		b.writeByte((s.length<255) ? s.length: 255);
+		for (i in 0...((s.length<255) ? s.length: 255)) b.writeByte(s.charCodeAt(i));
+	}
 
-			defaultParams.iterPre.value = b.readFloat();
-			defaultParams.iterPre.valueStart = b.readFloat();
-			defaultParams.iterPre.valueEnd = b.readFloat();
+	static inline function _readString(b:BytesInput):String {
+		var len:Int = b.readByte();
+		var s:String = "";
+		for (i in 0...len) s += String.fromCharCode(b.readByte());
+		return s;
+	}
+				
+	public function unSerializeParams(b:BytesInput)
+	{
+		//todo: TRY CATCH
 
-			defaultParams.iterMain.value = b.readFloat();
-			defaultParams.iterMain.valueStart = b.readFloat();
-			defaultParams.iterMain.valueEnd = b.readFloat();
+		positionX.value = b.readFloat();
+		positionY.value = b.readFloat();
+		scaleX.value = b.readFloat();
+		scaleY.value = b.readFloat();
 
-			defaultParams.balance.value = b.readFloat();
-			defaultParams.balance.valueStart = b.readFloat();
-			defaultParams.balance.valueEnd = b.readFloat();
-	
-			negColor = b.readInt32();
-			midColor = b.readInt32();
-			posColor = b.readInt32();
+		defaultParams.startIndex.value = b.readFloat();
+		defaultParams.startIndex.valueStart = b.readFloat();
+		defaultParams.startIndex.valueEnd = b.readFloat();
 
-			trace("AFTER UNSERIALIZATION AGAIN:");
+		defaultParams.iterPre.value = b.readFloat();
+		defaultParams.iterPre.valueStart = b.readFloat();
+		defaultParams.iterPre.valueEnd = b.readFloat();
 
-			// Sequence
-			sequence = _readString(b).split("");
-			trace(sequence);
+		defaultParams.iterMain.value = b.readFloat();
+		defaultParams.iterMain.valueStart = b.readFloat();
+		defaultParams.iterMain.valueEnd = b.readFloat();
 
-			// Formula
-			formulaString = _readString(b);
-			trace(formulaString);
+		defaultParams.balance.value = b.readFloat();
+		defaultParams.balance.valueStart = b.readFloat();
+		defaultParams.balance.valueEnd = b.readFloat();
 
-			// Formulas param values
-			var f:Formula = formulaString;
-			for (p in f.params()) {
-				if (p == "i" || p == "n" || p == "x" || p == "y") continue;
-				trace(p);
-				// f.bind( ("uParam"+p : Formula), p);
-				// formulaParams.set( p, new Param(p, "uParam"+p, b.readFloat(), b.readFloat(), b.readFloat(), -5, 5) );
-			}
+		negColor = b.readInt32();
+		midColor = b.readInt32();
+		posColor = b.readInt32();
+
+		// Sequence
+		sequence = _readString(b).split(""); // trace(sequence);
+
+		// Formula
+		formulaString = _readString(b); // trace(formulaString);
+		formula = formulaString;
+
+		// set all new for Formulas param values
+		formulaParams = [];
+
+		for (p in formula.params()) {
+			if (p == "i" || p == "n" || p == "x" || p == "y") continue;
+			formulaParams.set( p, new Param(p, "uParam"+p, b.readFloat(), b.readFloat(), b.readFloat()) );
+			formulaParamsLength++; //TODO: error if TO MUCH PARAMETERS
 		}
 		
-		
-		inline function getUrlParams()
-		{
-			#if html5
-			var e:EReg = new EReg("\\?([" + Base64.CHARS + "]+)$", "");
-			if (e.match(Browser.document.URL)) {
-				var bytes:Bytes = Base64.decode( e.matched(1) , false);
-				var b:BytesInput = new BytesInput(bytes);
-	
-				trace("URL params length",b.length);
-	
-				// if (b.length >= 33) {
-					/*
-					unSerializeParams(b);
-					//read rest into formula
-					trace("rest of length", b.length);
-	
-					// if (b.length > 33) {
-						var o = new BytesOutput();
-						o.writeBytes(bytes, b.position, (b.length - 33));
-						//trace("o:", o);
-						formulaBytes = o.getBytes();
-						try {
-							updateFormula(Formula.fromBytes(formulaBytes));
-							ui.formula.text = formula;
-						} catch (msg:String) {
-							trace("ERROR: can not parse formula from url-parameters");
-						}
-						*/
-					// }
-				// }
-			}
-			#end
+		// sequence-params what is not used by FORMULA!
+		for (p in sequence) {
+			if (p == "i" || p == "n" || p == "x" || p == "y" || formulaParams.exists(p)) continue;
+			formulaParams.set( p, new Param(p, "uParam"+p, b.readFloat(), b.readFloat(), b.readFloat()) );
+			formulaParamsLength++; //TODO: error if TO MUCH PARAMETERS
 		}
+		
+		trace(formulaParams);
+	}
 	
 	
-	
+
 	// ------------------------------------------------------------
 	// ----------------- LIME EVENTS ------------------------------
 	// ------------------------------------------------------------	
@@ -312,7 +313,7 @@ class Main extends Application
 				else if ( ! formulaParams.exists(c)) {
 					var param:Param = (oldUsedParams.exists(c)) ? oldUsedParams.get(c) : new Param(c, "uParam"+c, 0.0, -5, 5);
 					formulaParams.set( c, param );
-					formulaParamsLength++;
+					formulaParamsLength++; //TODO: erros if TO MUCH PARAMETERS
 					// add new widget by UI !
 					ui.addFormulaParam(c, param);
 				}					
@@ -323,8 +324,8 @@ class Main extends Application
 				updateShader = true;
 			}
 			else {
-				if (!found_x) trace('ERROR, formula is need parameter "x"');
-				if (!found_y) trace('ERROR, formula is need parameter "y"');
+				if (!found_x) trace('ERROR, sequence is need parameter "x"');
+				if (!found_y) trace('ERROR, sequence is need parameter "y"');
 				// TODO: give error-feedback by UI !
 			}
 		}
@@ -388,7 +389,7 @@ class Main extends Application
 							
 							var param:Param = (oldUsedParams.exists(p)) ? oldUsedParams.get(p) : new Param(p, "uParam"+p, 0.0, -5, 5);
 							formulaParams.set( p, param );
-							formulaParamsLength++;
+							formulaParamsLength++; //TODO: error if TO MUCH PARAMETERS
 							// add new widget by UI !
 							ui.addFormulaParam(p, param);
 						}
@@ -413,6 +414,11 @@ class Main extends Application
 		if (updateShader) {
 			// call lyapunows update function
 			Lyapunow.updateShader(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
+			Ui.paramChanged = true;
+		}
+
+		if (Ui.paramChanged) {
+			Ui.paramChanged = false;
 			updateUrlParams();
 		}
 

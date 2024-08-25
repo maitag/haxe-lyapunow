@@ -24,6 +24,7 @@ class Ui
 
 	public static var formulaChanged = false;
 	public static var sequenceChanged = false;
+	public static var paramChanged = false;
 	
 
 	var peoteView:PeoteView;
@@ -47,11 +48,23 @@ class Ui
 	public static var selectionStyle = BoxStyle.createById(0, Color.GREY3);
 	public static var cursorStyle = BoxStyle.createById(1, 0xaa2211ff);
 
-	public function new(peoteView:PeoteView, defaultParams:DefaultParams, formulaParams:FormulaParams, formula:String, sequence:String, onInit:Void->Void)
+	var posColor:Color;
+	var midColor:Color;
+	var negColor:Color;
+
+	public function new(
+		peoteView:PeoteView,
+		defaultParams:DefaultParams,
+		formulaParams:FormulaParams,
+		posColor:Color, midColor:Color, negColor:Color, 
+		formula:String,
+		sequence:String,
+		onInit:Void->Void)
 	{
 		this.peoteView = peoteView;
 		this.defaultParams = defaultParams;
 		this.formulaParams = formulaParams;
+		this.posColor = posColor; this.midColor = midColor; this.negColor = negColor;
 		Ui.formula = formula;
 		Ui.sequence = sequence;
 		this.onInit = onInit;
@@ -96,7 +109,7 @@ class Ui
 		mainArea_oldHeight = heightBeforeOverflow = Std.int( Math.max( Math.min( peoteView.height * 0.75, 500 ), 200));
 
 		mainArea = new UiMainArea(
-			defaultParams, formulaParams,
+			defaultParams, formulaParams, posColor, midColor, negColor,
 			peoteView.width - widthBeforeOverflow, 3,
 			widthBeforeOverflow, 400,
 			{

@@ -1,5 +1,7 @@
 package ui;
 
+import peote.view.Color;
+
 import peote.ui.config.TextConfig;
 import peote.ui.config.AreaConfig;
 import peote.ui.interactive.UIArea;
@@ -40,6 +42,7 @@ class UiMainArea extends UIArea implements ParentElement
 	public function new(
 		defaultParams:DefaultParams,
 		formulaParams:FormulaParams,
+		posColor:Color, midColor:Color, negColor:Color, 
 		xPosition:Int, yPosition:Int, width:Int, height:Int, zIndex:Int = 0,
 		?config:AreaConfig
 	) 
@@ -124,7 +127,7 @@ class UiMainArea extends UIArea implements ParentElement
 			t.stopSelection(e);
 		}
 		sequenceInput.onInsertText = sequenceInput.onDeleteText = function(t, from:Int, to:Int, value:String) {
-			trace("sequenceInput on change",from, to, value);
+			// trace("sequenceInput on change",from, to, value);
 			Ui.sequence = t.text;
 			Ui.sequenceChanged = true;
 		}
@@ -187,21 +190,21 @@ class UiMainArea extends UIArea implements ParentElement
 		var sliderHeight = 20;
 		var colorAreaHeight:Int = Std.int(Ui.fontStyle.height + (sliderHeight+1)*3 );
 
-		colorPosArea = new UiColorArea( "color for positive index", Color.RED, Lyapunow.updatePosColor, 
+		colorPosArea = new UiColorArea( "color for positive index", posColor, Lyapunow.updatePosColor, 
 			leftSpace, _y, paramAreaWidth, colorAreaHeight, sliderHeight,
 			{ backgroundStyle:Ui.paramStyleBG.copy() }
 		);
 		add(colorPosArea);
 		_y += colorAreaHeight + gap;
 		
-		colorMidArea = new UiColorArea( "color for middle index", Color.BLACK, Lyapunow.updateMidColor, 
+		colorMidArea = new UiColorArea( "color for middle index", midColor, Lyapunow.updateMidColor, 
 			leftSpace, _y, paramAreaWidth, colorAreaHeight, sliderHeight,
 			{ backgroundStyle:Ui.paramStyleBG.copy() }
 		);
 		add(colorMidArea);
 		_y += colorAreaHeight + gap;
 		
-		colorNegArea = new UiColorArea( "color for negative index", Color.BLUE, Lyapunow.updateNegColor, 
+		colorNegArea = new UiColorArea( "color for negative index", negColor, Lyapunow.updateNegColor, 
 			leftSpace, _y, paramAreaWidth, colorAreaHeight, sliderHeight,
 			{ backgroundStyle:Ui.paramStyleBG.copy() }
 		);
