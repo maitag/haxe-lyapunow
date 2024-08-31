@@ -436,14 +436,28 @@ class Main extends Application
 
 	// ----------------- KEYBOARD EVENTS ---------------------------
 	var isShift = false;
-	override function onKeyDown (keyCode:KeyCode, modifier:KeyModifier):Void {
+	override function onKeyDown(keyCode:KeyCode, modifier:KeyModifier):Void {
 		if (keyCode == KeyCode.LEFT_SHIFT || keyCode == KeyCode.RIGHT_SHIFT) isShift = true;
-		else if (keyCode == KeyCode.RETURN) Exporter.generateOSL(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
-	}	
-	override function onKeyUp (keyCode:KeyCode, modifier:KeyModifier):Void {
+
+		// save OSL
+		if ((modifier & KeyModifier.CTRL>0) && (modifier & KeyModifier.SHIFT>0) && ( keyCode == KeyCode.RETURN || keyCode == KeyCode.NUMPAD_ENTER) )
+			Exporter.saveDialogueOSL(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
+		if ((modifier & KeyModifier.CTRL>0) && ( keyCode == KeyCode.RETURN || keyCode == KeyCode.NUMPAD_ENTER) )
+			Exporter.saveOSL(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
+
+
+	}
+
+	override function onKeyUp(keyCode:KeyCode, modifier:KeyModifier):Void {
 		if (keyCode == KeyCode.LEFT_SHIFT || keyCode == KeyCode.RIGHT_SHIFT) isShift = false;
 	}
 	
+	override function onWindowLeave() {
+		#if html5
+		isShift = false;
+		#end
+	}
+
 	// ----------------- TOUCH and MOUSE EVENTS ------------------------------
 	var checkFirstTouch = true;
 	var isTouch = false;

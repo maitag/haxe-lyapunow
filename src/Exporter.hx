@@ -12,14 +12,13 @@ class Exporter
 {
 	static public function generateOSL(formula:Formula, sequence:Array<String>,
 		positionX:UniformFloat, positionY:UniformFloat, scaleX:UniformFloat, scaleY:UniformFloat, 
-		defaultParams:DefaultParams, formulaParams:FormulaParams)
+		defaultParams:DefaultParams, formulaParams:FormulaParams):String
 	{
-
 		var func:String = formula.toString("glsl");
 		var deriv:String = formula.derivate("i").simplify().toString("glsl");
 			
-		trace("func", func);
-		trace("derivate", deriv);
+		// trace("func", func);
+		// trace("derivate", deriv);
 
 		var input_param:String = "";
 		var extra_param:String = "";
@@ -54,7 +53,7 @@ class Exporter
 		}
 
 
-		var osl =
+		return
 
 'float func(float i, float n $extra_func_param) {
 	return $func;
@@ -141,30 +140,34 @@ shader node_lyapunov(
 		Color = Index * (MidColor - NegColor) + MidColor;
 	}		
 }
-';
-		
-		saveOSL(pathOSL, filenameOSL, osl);	
+';		
+
 	}
 
-	public static var pathOSL:String = "D:\\maitag\\2024\\blenderfractals\\lyapunov-osl\\";
+	public static var pathOSL:String = null;
 	public static var filenameOSL:String = "lyapunow.osl";
 
-	public static function saveOSL(path:String, filename:String, text:String) {
+	public static function saveDialogueOSL(formula:Formula, sequence:Array<String>,
+		positionX:UniformFloat, positionY:UniformFloat, scaleX:UniformFloat, scaleY:UniformFloat, 
+		defaultParams:DefaultParams, formulaParams:FormulaParams)
+	{
+		
+		var osl:String = generateOSL(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
+		
 		#if html5
 
-		var blob = new js.html.Blob([text], { type: 'text/plain' });
+		var blob = new js.html.Blob([osl], { type: 'text/plain' });
 		var url = js.html.URL.createObjectURL(blob);
 		var anchor = js.Browser.document.createAnchorElement();
 		anchor.href = url;
-		anchor.download = filename;
+		anchor.download = filenameOSL;
 		anchor.click();
 
-		#elseif sys
+		#else
 
-		var fd = new lime.ui.FileDialog();
+		var fileDialog = new lime.ui.FileDialog();
 		
-        fd.onSave.add ( (path) -> {
-			trace ("onSave: " + path);
+		fileDialog.onSave.add ( (path) -> {
 			var r = ~/([^\/\\]+)$/;
 			if ( r.match(path) ) {
 				filenameOSL = r.matched(1);
@@ -172,19 +175,25 @@ shader node_lyapunov(
 				trace(pathOSL + filenameOSL);
 			}
 		});
-        fd.onCancel.add ( () -> {
-			trace ("cancel");
-		});
 
-		fd.save(text, "osl", path + filename, "Save OSL file");
+		if (pathOSL == null) pathOSL = "";
+		fileDialog.save(osl, "osl", pathOSL + filenameOSL, "Save OSL file");
 
 		#end
 	}
 
-	// TODO: to override an existing written file without fileselector:
-	// sys.io.File.saveContent(path+filename, text);
+	public static function saveOSL(formula:Formula, sequence:Array<String>,
+		positionX:UniformFloat, positionY:UniformFloat, scaleX:UniformFloat, scaleY:UniformFloat, 
+		defaultParams:DefaultParams, formulaParams:FormulaParams)
+	{
+		#if html5
+		saveDialogueOSL(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
+		#else
 
-	
+		if (pathOSL == null) saveDialogueOSL(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
+		else sys.io.File.saveContent(pathOSL+filenameOSL, generateOSL(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams));
+		#end
+	}
 
 
 
