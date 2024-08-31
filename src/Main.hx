@@ -17,7 +17,10 @@ import lime.ui.KeyCode;
 import lime.ui.KeyModifier;
 import lime.ui.Touch;
 
-import peote.view.*;
+import peote.view.PeoteView;
+import peote.view.Display;
+import peote.view.Color;
+import peote.view.UniformFloat;
 
 import Formula;
 import FormulaException;
@@ -133,13 +136,18 @@ class Main extends Application
 	// ------------------------------------------------
 	// --------------- URL handling -------------------
 	// ------------------------------------------------
-
+	// var history_state:Int = 0;
 	inline function updateUrlParams()
 	{	
 		#if html5
 		var b:BytesOutput = serializeParams();
 		var base64:String = Base64.encode(b.getBytes(), false);
 		Browser.window.history.replaceState('haxelyapunow', 'haxelyapunow', Browser.location.pathname + '?' + base64);
+
+		// this adds a new state each time (so borwser can go back into history 
+		// better let do this only by press a button to not spam the history [needs random salt at end of url or something to refresh the if it goes back!])
+		// Browser.window.history.pushState('haxelyapunow'+(history_state++), "", Browser.location.pathname + '?' + base64);
+
 		#else
 		// for testing only:
 		// var bytes = serializeParams().getBytes();
@@ -246,10 +254,11 @@ class Main extends Application
 		posColor = b.readInt32();
 
 		// Sequence
-		sequence = _readString(b).split(""); // trace(sequence);
+		sequence = _readString(b).split("");
+		//TODO: error if sequence is to long
 
 		// Formula
-		formulaString = _readString(b); // trace(formulaString);
+		formulaString = _readString(b);
 		formula = formulaString;
 
 		// set all new for Formulas param values
@@ -268,7 +277,7 @@ class Main extends Application
 			formulaParamsLength++; //TODO: error if TO MUCH PARAMETERS
 		}
 		
-		trace(formulaParams);
+		// trace(formulaParams);
 	}
 	
 	
@@ -287,7 +296,7 @@ class Main extends Application
 		if (Ui.sequenceChanged) 
 		{
 			Ui.sequenceChanged = false;
-			trace("-------- Sequence change --------:");
+			// trace("-------- Sequence change --------:");
 
 			// check for removed parameters
 			for (c in sequence) {
@@ -336,7 +345,7 @@ class Main extends Application
 		if (Ui.formulaChanged) 
 		{
 			Ui.formulaChanged = false;				
-			trace("-------- Formula change -----------:");
+			// trace("-------- Formula change -----------:");
 				
 			var f:Formula = null;
 			
@@ -344,10 +353,10 @@ class Main extends Application
 				f = Ui.formula;
 			}
 			catch (e:FormulaException) {
-				trace(e.msg);
+				/*trace(e.msg);
 				var spaces = ""; for (i in 0...e.pos) spaces += " ";
 				trace(Ui.formula);
-				trace(spaces + "^\n");
+				trace(spaces + "^\n");*/
 				// TODO: give error-feedback by UI !
 			}
 
@@ -381,7 +390,7 @@ class Main extends Application
 					{
 						if ( ! formulaParams.exists(p)) {
 							if (p.length > 8) {
-								trace('ERROR, parameter "$p" should have not more then 8 chars');
+								// trace('ERROR, parameter "$p" should have not more then 8 chars');
 								// TODO: give error-feedback by UI !
 								param_length_ok = false;
 								break;
@@ -404,8 +413,8 @@ class Main extends Application
 					updateShader = true;
 				}
 				else {
-					if (!found_i) trace('ERROR, formula is need parameter "i"');
-					if (!found_n) trace('ERROR, formula is need parameter "n"');
+					// if (!found_i) trace('ERROR, formula is need parameter "i"');
+					// if (!found_n) trace('ERROR, formula is need parameter "n"');
 					// TODO: give error-feedback by UI !
 				}
 			}
@@ -429,6 +438,7 @@ class Main extends Application
 	var isShift = false;
 	override function onKeyDown (keyCode:KeyCode, modifier:KeyModifier):Void {
 		if (keyCode == KeyCode.LEFT_SHIFT || keyCode == KeyCode.RIGHT_SHIFT) isShift = true;
+		else if (keyCode == KeyCode.RETURN) Exporter.generateOSL(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
 	}	
 	override function onKeyUp (keyCode:KeyCode, modifier:KeyModifier):Void {
 		if (keyCode == KeyCode.LEFT_SHIFT || keyCode == KeyCode.RIGHT_SHIFT) isShift = false;

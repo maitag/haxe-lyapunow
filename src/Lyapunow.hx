@@ -1,12 +1,15 @@
 package;
 
-import peote.view.*;
+import peote.view.Element;
+import peote.view.Display;
+import peote.view.Buffer;
+import peote.view.Program;
+import peote.view.UniformFloat;
+import peote.view.Color;
 import Formula;
 
 import Param.DefaultParams;
 import Param.FormulaParams;
-
-import peote.view.Color;
 
 class Lyapunow implements Element
 {
@@ -121,7 +124,6 @@ class Lyapunow implements Element
 					int iter_pre =  int(floor(uIterPre));
 					int iter_main = int(floor(uIterMain));
 					float iter_main_full = floor(uIterMain) * ${sequence.length}.0;
-					if (iter_main_full == 0.0) iter_main_full = 1.175494351e-38;
 	
 					float nabla_pre = uIterPre - float(iter_pre);
 					float nabla_main = uIterMain - float(iter_main);
@@ -137,9 +139,9 @@ class Lyapunow implements Element
 						}
 					}
 					if (nabla_pre != 0.0) {
-						float x_pre = i;
+						float i_pre = i;
 						pre_step(i, xy);
-						i = i*nabla_pre + x_pre*(1.0-nabla_pre);
+						i = i*nabla_pre + i_pre*(1.0-nabla_pre);
 					}
 						
 					// main-iteration ########################
@@ -163,7 +165,7 @@ class Lyapunow implements Element
 						index = index*nabla_main + index_pre*(1.0-nabla_main);
 					}
 	
-					return  index*( (index > 0.0) ? posColor - midColor : midColor - negColor  ) + midColor ;
+					return index*( (index > 0.0) ? posColor - midColor : midColor - negColor  ) + midColor ;
 				}			
 			'
 			, false // inject uTime

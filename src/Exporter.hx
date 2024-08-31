@@ -28,7 +28,7 @@ class Exporter
 		for (p in formula.params()) {
 			if ( p=="i" || p=="n" ) continue;
 			var v = formulaParams.get(p);
-			if ( !( p == "x" || p == "y" || p == "z") ) input_param += 'float Param_$p = ${v.value},\n';
+			if ( !( p == "x" || p == "y" || p == "z") ) input_param += 'float Param_$p = ${v.value},\n\t';
 
 			if (p=="x") extra_param += ",p[0]";
 			else if (p=="y") extra_param += ",-p[1]";
@@ -49,12 +49,12 @@ class Exporter
 			else if (s=="z") s = "p[2]";
 			else s = "Param_"+s;
 			s += extra_param;
-			pre_sequence += 'i =  func(i, $s);\n';
-			main_sequence +='i =  func(i, $s);\nIndex += (log(abs(deriv(i, $s)))*Balance + (deriv(i, $s))*(1.0-Balance)) / 2.0;\n';
+			pre_sequence += 'i =  func(i, $s);\n\t';
+			main_sequence +='i =  func(i, $s);\n\tIndex += (log(abs(deriv(i, $s)))*Balance + (deriv(i, $s))*(1.0-Balance)) / 2.0;\n';
 		}
 
 
-		var oslTmpl =
+		var osl =
 
 'float func(float i, float n $extra_func_param) {
 	return $func;
@@ -143,9 +143,94 @@ shader node_lyapunov(
 }
 ';
 		
-		trace(oslTmpl);
+		saveOSL(pathOSL, filenameOSL, osl);	
+	}
+
+	public static var pathOSL:String = "D:\\maitag\\2024\\blenderfractals\\lyapunov-osl\\";
+	public static var filenameOSL:String = "lyapunow.osl";
+
+	public static function saveOSL(path:String, filename:String, text:String) {
+		#if html5
+
+		var blob = new js.html.Blob([text], { type: 'text/plain' });
+		var url = js.html.URL.createObjectURL(blob);
+		var anchor = js.Browser.document.createAnchorElement();
+		anchor.href = url;
+		anchor.download = filename;
+		anchor.click();
+
+		#elseif sys
+
+		var fd = new lime.ui.FileDialog();
+		
+        fd.onSave.add ( (path) -> {
+			trace ("onSave: " + path);
+			var r = ~/([^\/\\]+)$/;
+			if ( r.match(path) ) {
+				filenameOSL = r.matched(1);
+				pathOSL = r.replace(path, "");
+				trace(pathOSL + filenameOSL);
+			}
+		});
+        fd.onCancel.add ( () -> {
+			trace ("cancel");
+		});
+
+		fd.save(text, "osl", path + filename, "Save OSL file");
+
+		#end
+	}
+
+	// TODO: to override an existing written file without fileselector:
+	// sys.io.File.saveContent(path+filename, text);
 
 	
-	}
+
+
+
+
+
+
+
+	// TODO:
+	/*
+		trace("save image");
+		
+		// data what holds the rgba-imagedata
+		var data = textureCanvas.readPixelsUInt8(0, 0, 800, 600);
+
+		// convert into lime Image
+		var imageBuffer = new ImageBuffer(lime.utils.UInt8Array.fromBytes(data.view.buffer), 800, 600, 32, PixelFormat.RGBA32);
+		imageBuffer.format = RGBA32;
+		var image = new Image(imageBuffer);
+
+		// encode image format
+		var format = ImageFileFormat.PNG;
+		//var format = ImageFileFormat.JPEG;
+		//var format = ImageFileFormat.BMP;
+		
+		var imageData = image.encode(format);
+		
+		// save into file
+		var fileName = "picture." + switch (format) {
+			case JPEG:"jpg";
+			case BMP:"bmp";
+			default: "png";
+		};
+		
+		#if html5
+			var arrayBuffer:js.lib.ArrayBuffer = imageData.getData();					
+			var blob = new js.html.Blob([arrayBuffer]);
+			var url = js.html.URL.createObjectURL(blob);
+			var anchor = js.Browser.document.createAnchorElement();
+			anchor.href = url;
+			anchor.download = fileName;
+			anchor.click();				
+		#else
+			var fileOutput =  sys.io.File.write(fileName, true);
+			fileOutput.writeBytes(imageData, 0, imageData.length);
+			fileOutput.close();
+		#end
+	*/
 	
 }
