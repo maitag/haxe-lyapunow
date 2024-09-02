@@ -63,17 +63,17 @@ float deriv(float i, float n $extra_func_param) {
 }
 
 shader node_lyapunov(
-	float Start_Index = 0.0,
-	float Pre_Iteration = 0.0,
-	float Main_Iteration = 1.0,
+	float Start_Index = ${defaultParams.startIndex.value},
+	float Pre_Iteration = ${defaultParams.iterPre.value},
+	float Main_Iteration = ${defaultParams.iterMain.value},
 
 	$input_param
 	
-	float Balance = 1.0,
+	float Balance = ${defaultParams.balance.value},
 	
-	color PosColor = color (1.0, 0.0, 0.0),
-	color MidColor = color (0.0, 0.0, 0.0),
-	color NegColor = color (0.0, 0.0, 1.0),
+	color PosColor = color (${Lyapunow.element.posColor.rF}, ${Lyapunow.element.posColor.gF}, ${Lyapunow.element.posColor.bF}),
+	color MidColor = color (${Lyapunow.element.midColor.rF}, ${Lyapunow.element.midColor.gF}, ${Lyapunow.element.midColor.bF}),
+	color NegColor = color (${Lyapunow.element.negColor.rF}, ${Lyapunow.element.negColor.gF}, ${Lyapunow.element.negColor.bF}),
 	
 	point Pos = P,			
 	float Scale = 1.0,
