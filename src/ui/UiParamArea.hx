@@ -92,7 +92,7 @@ class UiParamArea extends UIArea implements ParentElement
 		buttonStart.onPointerOut = function(t:UITextLine<UiFontStyle>, _) t.backgroundStyle = buttonBgStyle;
 		buttonStart.onPointerDown = function(t:UITextLine<UiFontStyle>, _) {t.fontStyle = buttonFontStyleDown; t.updateStyle();}
 		buttonStart.onPointerUp = function(t:UITextLine<UiFontStyle>, _) {t.fontStyle = buttonFontStyle; t.updateStyle();}
-
+		
 		add(buttonStart);
 
 		// ---------- button to set start value --------------
@@ -119,7 +119,7 @@ class UiParamArea extends UIArea implements ParentElement
 		buttonEnd.onPointerOut = function(t:UITextLine<UiFontStyle>, _) t.backgroundStyle = buttonBgStyle;
 		buttonEnd.onPointerDown = function(t:UITextLine<UiFontStyle>, _) {t.fontStyle = buttonFontStyleDown; t.updateStyle();}
 		buttonEnd.onPointerUp = function(t:UITextLine<UiFontStyle>, _) {t.fontStyle = buttonFontStyle; t.updateStyle();}
-
+		
 		add(buttonEnd);
 
 		// -----------------------------------------------------
@@ -258,7 +258,7 @@ class UiParamArea extends UIArea implements ParentElement
 			onChange(value);
 		}
 		slider.onDraggerPointerUp = (_,_) -> Ui.paramChanged = true;
-
+		
 		add(slider);
 		
 		// slider.updateDragger();

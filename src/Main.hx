@@ -110,6 +110,8 @@ class Main extends Application
 		for (p in formulaParams.keys()) formula.bind( ("uParam"+p : Formula), p);
 
 		ui = new Ui(peoteView,
+			updateUrlParams,
+			positionX, positionY, scaleX, scaleY,
 			defaultParams,
 			formulaParams,
 			posColor, midColor, negColor,
@@ -459,6 +461,7 @@ class Main extends Application
 	}
 
 	// ----------------- TOUCH and MOUSE EVENTS ------------------------------
+	/*
 	var checkFirstTouch = true;
 	var isTouch = false;
 
@@ -468,7 +471,7 @@ class Main extends Application
 	var dragstart_y:Float = 0;
 	var dragmode:Bool = false;
 	var changed:Bool = false;
-	var zoom:Float = 1.0;
+	//var zoom:Float = 1.0;
 	var zoomstep:Float = 1.2;
 
 	override function onTouchStart (touch:Touch):Void {
@@ -547,7 +550,13 @@ class Main extends Application
 			changed = true;
 		}
 	}
-	
+	*/
+
+	// TODO: extend peote-ui to let the Display also have the mousewheel-handler
+	override function onMouseWheel (deltaX:Float, deltaY:Float, deltaMode:MouseWheelMode):Void {
+		ui.mouseWheel(deltaX, deltaY, deltaMode, isShift);
+	}
+
 
 	// -------------- other WINDOWS EVENTS ----------------------------
 	override function onWindowResize (width:Int, height:Int):Void {
