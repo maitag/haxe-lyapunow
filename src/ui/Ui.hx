@@ -5,7 +5,6 @@ import haxe.ds.Vector;
 import lime.ui.MouseButton;
 import lime.ui.MouseWheelMode;
 
-
 import peote.ui.event.PointerEvent;
 import peote.ui.event.WheelEvent;
 import peote.ui.event.PointerType;
@@ -36,7 +35,6 @@ class Ui
 	public static var sequenceChanged = false;
 	public static var paramChanged = false;
 	
-
 	var peoteView:PeoteView;
 
 	var updateUrlParams:Void->Void;
@@ -247,7 +245,6 @@ class Ui
 		peoteUiDisplay.width = width;
 		peoteUiDisplay.height = height;
 
-
 		if (mainSlider.isVisible) width -= mainSlider.width;
 		height -= 6;
 
@@ -318,33 +315,45 @@ class Ui
 	// ------------------------------------------------
 	var mouse_x:Float = 0;
 	var mouse_y:Float = 0;
-	var dragstart_x:Float = 0;
-	var dragstart_y:Float = 0;
+	var mouse_start_x:Float = 0;
+	var mouse_start_y:Float = 0;
 	
 	var mouse_mode:Bool = false;
 	var touch_mode:Bool = false;
 
-	var active_touch_id:Vector<{start_x:Float, start_y:Float}> = new Vector(10); // TODO: make depend on how much allowed at same time
+	var active_touch_id:Vector<{x:Float, y:Float}> = new Vector(10); // TODO: make depend on how much allowed at same time
 	var active_touches = new Array<Int>(); // stores the touch-ids into order
 	
-	// var touch_startscale:Float = 0;
+	var touch_start_x:Float = 0; // center if 2 touchpoints
+	var touch_start_y:Float = 0;
+	var touch_start_distance:Float = 0;
 
-	var t1 = {start_x:0.0, start_y:0.0}; // <- for testing
+	var touch_position_start_x:Float = 0;
+	var touch_position_start_y:Float = 0;
+
+	var touch_scale_start:Float = 0;
 
 	function pointerDown(_, e:PointerEvent) {
 		if (e.type == PointerType.TOUCH)
 		{
 			// trace("UI->onPointerDown TOUCH", e);
-			// TODO: better store not together with positionX/Y.value here to handle multitouch
-			active_touch_id.set(e.touch.id, { start_x: positionX.value - e.x, start_y: positionY.value - e.y });
+			active_touch_id.set(e.touch.id, { x: e.x, y: e.y });
 			active_touches.unshift(e.touch.id);
 			
-			// touch_startscale = scaleX.value;
-
-			// TODO: remember the CENTER and START position + distance!
-			if (active_touches.length > 1) {
-				// var t = active_touch_id.set(active_touches[1], );
+			if (active_touches.length == 1) { // single touchpoint
+				touch_start_x = e.x;
+				touch_start_y = e.y;
 			}
+			else {
+				var t = active_touch_id.get(active_touches[1]);
+				touch_start_x = (t.x + e.x)/2;
+				touch_start_y = (t.y + e.y)/2;
+				touch_start_distance = Math.sqrt( (t.x - e.x)*(t.x - e.x) + (t.y - e.y)*(t.y - e.y) );
+			}
+
+			touch_position_start_x = positionX.value;
+			touch_position_start_y = positionY.value;
+			touch_scale_start = scaleX.value;
 
 			touch_mode = true;
 		}
@@ -353,8 +362,8 @@ class Ui
 			// trace("UI->onPointerDown MOUSE", e);
 			if ( e.type == PointerType.MOUSE && e.mouseButton != MouseButton.LEFT ) return;
 			
-			dragstart_x = positionX.value - e.x;
-			dragstart_y = positionY.value - e.y;
+			mouse_start_x = positionX.value - e.x;
+			mouse_start_y = positionY.value - e.y;
 
 			mouse_mode = true;
 		}	
@@ -370,12 +379,30 @@ class Ui
 				touch_mode = false;
 				updateUrlParams();
 			}
+			else {
+				if (active_touches.length == 1) {
+					var t = active_touch_id.get(active_touches[0]);
+					touch_start_x = t.x;
+					touch_start_y = t.y;
+				}
+				else {
+					var t0 = active_touch_id.get(active_touches[0]);
+					var t1 = active_touch_id.get(active_touches[1]);
+					touch_start_x = (t0.x + t1.x)/2;
+					touch_start_y = (t0.y + t1.y)/2;
+					touch_start_distance = Math.sqrt( (t0.x - t1.x)*(t0.x - t1.x) + (t0.y - t1.y)*(t0.y - t1.y) );
+				}
+				touch_position_start_x = positionX.value;
+				touch_position_start_y = positionY.value;
+				touch_scale_start = scaleX.value;
+			}
+
 		}
 		else // ----- MOUSE UP -------
 		{
 			// trace("UI->onPointerUp MOUSE", e);
 			if ( e.type == PointerType.MOUSE && e.mouseButton != MouseButton.LEFT ) return;
-			if (e.x != dragstart_x || e.y != dragstart_y) updateUrlParams();
+			if (e.x != mouse_start_x || e.y != mouse_start_y) updateUrlParams();
 
 			mouse_mode = false;
 		}
@@ -385,44 +412,35 @@ class Ui
 		if (e.type == PointerType.TOUCH)
 		{
 			// trace("UI->onPointerMove TOUCH");		
-			
+			active_touch_id.set(e.touch.id, { x: e.x, y: e.y });
+
 			if (active_touches.length == 1) {
 				// simple DRAG by one touchpoint only
 				var t = active_touch_id.get(e.touch.id);
-				positionX.value = (t.start_x + e.x);
-				positionY.value = (t.start_y + e.y);
+				positionX.value = touch_position_start_x + (e.x - touch_start_x);
+				positionY.value = touch_position_start_y + (e.y - touch_start_y);
 			}
-			// TODO:
-			/*
 			else if (e.touch.id == active_touches[0] || e.touch.id == active_touches[1]) {
 				// DRAGGING the Center of the latest pressed two touchpoints
 				var t0 = active_touch_id.get(active_touches[0]);
-				// var t1 = active_touch_id.get(active_touches[1]);
+				var t1 = active_touch_id.get(active_touches[1]);
 
-				var old_center_x:Float = (t0.start_x + t1.start_x) / 2;
-				var old_center_y:Float = (t0.start_y + t1.start_y) / 2;
-
-				var center_x:Float = (t0.start_x + t1.start_x + e.x) / 2;
-				var center_y:Float = (t0.start_y + t1.start_y + e.y) / 2;
-
-				positionX.value = t1.start_x + center_x - old_center_x;
-				positionY.value = t1.start_y + center_y - old_center_y;
+				positionX.value = touch_position_start_x + (t0.x + t1.x)/2 - touch_start_x;
+				positionY.value = touch_position_start_y + (t0.y + t1.y)/2 - touch_start_y;
 
 				// ZOOMING by distance between the two latest pressed touchpoints
-				var old_distance:Float = Math.sqrt( (t0.start_x - t1.start_x)*(t0.start_x - t1.start_x) + (t0.start_y - t1.start_y)*(t0.start_y - t1.start_y)  );
-				var distance:Float;
-				if (e.touch.id == active_touches[0])
-					distance = Math.sqrt( (t0.start_x + e.x - t1.start_x)*(t0.start_x + e.x - t1.start_x) + (t0.start_y + e.y - t1.start_y)*(t0.start_y + e.y - t1.start_y)  );
-				else 
-					distance = Math.sqrt( (t0.start_x - e.x - t1.start_x)*(t0.start_x - e.x - t1.start_x) + (t0.start_y - e.y - t1.start_y)*(t0.start_y - e.y - t1.start_y)  );
+				var scale_new_value = touch_scale_start * Math.sqrt( (t0.x - t1.x)*(t0.x - t1.x) + (t0.y - t1.y)*(t0.y - t1.y) ) / touch_start_distance;
 
-				trace(old_distance, distance);
-				// touchZoom(old_distance, distance, center_x, center_y);
-			} */
-			else {
-				// later touched points will only update its position to use (maybe) later
-				active_touch_id.set(e.touch.id, { start_x: positionX.value - e.x, start_y: positionY.value - e.y });
-			}
+				var x:Float = (t0.x + t1.x)/2;
+				var y:Float = (t0.y + t1.y)/2;
+
+				if ( scale_new_value > 0.0001 && scale_new_value < 0xfffff) {
+					positionX.value -= (scale_new_value/touch_scale_start) * (x - positionX.value) - (x - positionX.value);
+					positionY.value -= (scale_new_value/touch_scale_start) * (y - positionY.value) - (y - positionY.value);
+					scaleX.value = scaleY.value = scale_new_value;
+				}
+			} 
+
 
 		}
 		else // ----- MOUSE MOVE -------
@@ -431,44 +449,10 @@ class Ui
 			mouse_x = e.x;
 			mouse_y = e.y;		
 			if (!touch_mode && mouse_mode) {
-				positionX.value = (dragstart_x + mouse_x);
-				positionY.value = (dragstart_y + mouse_y);
+				positionX.value = (mouse_start_x + mouse_x);
+				positionY.value = (mouse_start_y + mouse_y);
 			}
 		}
-	}
-
-	// TODO:
-	function touchZoom(old_distance:Float, new_distance:Float, center_x:Float, center_y:Float, isShift:Bool = false) {
-		/*
-		var scale_new_value = touch_startscale + (new_distance - old_distance)/200;
-
-		if ( scale_new_value > 0.0001 && scale_new_value < 0xfffff) {
-			positionX.value -= (scale_new_value/touch_startscale) * (center_x - positionX.value) - (center_x - positionX.value);
-			positionY.value -= (scale_new_value/touch_startscale) * (center_y - positionY.value) - (center_y - positionY.value);
-			scaleX.value = scaleY.value = scale_new_value;
-		}
-		*/
-		
-		/*if ( old_distance < new_distance ) {
-			if (scaleX.value < 0xfffff) {
-				positionX.value -= zoomstep * (center_x - positionX.value) - (center_x - positionX.value);
-				scaleX.value *= zoomstep;
-			}
-			if ( !isShift && scaleY.value < 0xfffff) {
-				positionY.value -= zoomstep * (center_y - positionY.value) - (center_y - positionY.value);
-				scaleY.value *= zoomstep;
-			}
-		}
-		else if ( old_distance > new_distance ) {
-			if ( scaleX.value > 0.0001 ) {
-				positionX.value -= (center_x - positionX.value) / zoomstep - (center_x - positionX.value);
-				scaleX.value /= zoomstep;
-			}
-			if ( !isShift && scaleY.value > 0.0001 ) {
-				positionY.value -= (center_y - positionY.value) / zoomstep - (center_y - positionY.value);
-				scaleY.value /= zoomstep;
-			}
-		}*/
 	}
 
 	public function mouseWheel(deltaX:Float, deltaY:Float, deltaMode:MouseWheelMode, isShift:Bool, zoomstep:Float = 1.2) {

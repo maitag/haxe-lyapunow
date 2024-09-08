@@ -447,7 +447,6 @@ class Main extends Application
 		if ((modifier & KeyModifier.CTRL>0) && ( keyCode == KeyCode.RETURN || keyCode == KeyCode.NUMPAD_ENTER) )
 			Exporter.saveOSL(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
 
-
 	}
 
 	override function onKeyUp(keyCode:KeyCode, modifier:KeyModifier):Void {
@@ -459,98 +458,6 @@ class Main extends Application
 		isShift = false;
 		#end
 	}
-
-	// ----------------- TOUCH and MOUSE EVENTS ------------------------------
-	/*
-	var checkFirstTouch = true;
-	var isTouch = false;
-
-	var mouse_x:Float = 0;
-	var mouse_y:Float = 0;
-	var dragstart_x:Float = 0;
-	var dragstart_y:Float = 0;
-	var dragmode:Bool = false;
-	var changed:Bool = false;
-	//var zoom:Float = 1.0;
-	var zoomstep:Float = 1.2;
-
-	override function onTouchStart (touch:Touch):Void {
-		if (checkFirstTouch) {checkFirstTouch = false; isTouch = true;}
-		if (isTouch) startDrag(touch.x, touch.y);
-	}
-	override function onTouchMove (touch:Touch):Void {
-		if (isTouch) moveDrag(touch.x, touch.y);
-	}
-	override function onTouchEnd (touch:Touch):Void {
-		if (isTouch) stopDrag();
-	}
-	
-	override function onMouseDown(x:Float, y:Float, button:MouseButton):Void {	
-		if (checkFirstTouch) checkFirstTouch = false;
-		if (!isTouch) if ( button == MouseButton.LEFT ) startDrag(x, y);
-	}
-	
-	override function onMouseUp(x:Float, y:Float, button:MouseButton):Void {	
-		if (!isTouch) if ( button == MouseButton.LEFT ) stopDrag();
-	}
-	
-	override function onMouseMove (x:Float, y:Float):Void {
-		if (!isTouch) moveDrag(x, y);
-	}
-	
-	override function onMouseWheel (deltaX:Float, deltaY:Float, deltaMode:MouseWheelMode):Void {
-		if (mouse_x >= ui.mainArea.x && mouse_y <= ui.mainArea.bottom) return;
-		if ( deltaY > 0 ) {
-			if (scaleX.value < 0xfffff) {
-				positionX.value -= zoomstep * (mouse_x - positionX.value) - (mouse_x - positionX.value);
-				scaleX.value *= zoomstep;
-			}
-			if ( !isShift && scaleY.value < 0xfffff) {
-				positionY.value -= zoomstep * (mouse_y - positionY.value) - (mouse_y - positionY.value);
-				scaleY.value *= zoomstep;
-			}
-		}
-		else {
-			if ( scaleX.value > 0.0001 ) {
-				positionX.value -= (mouse_x - positionX.value) / zoomstep - (mouse_x - positionX.value);
-				scaleX.value /= zoomstep;
-			}
-			if ( !isShift && scaleY.value > 0.0001 ) {
-				positionY.value -= (mouse_y - positionY.value) / zoomstep - (mouse_y - positionY.value);
-				scaleY.value /= zoomstep;
-			}
-		}
-		
-		updateUrlParams();
-	}
-
-	// Dragging --------------------------------------------------
-	
-	inline function startDrag(x:Float, y:Float) {
-		if (x >= ui.mainArea.x && y <= ui.mainArea.bottom) return;
-		dragstart_x = positionX.value - x;
-		dragstart_y = positionY.value - y;
-		dragmode = true;		
-	}
-		
-	inline function stopDrag() {
-		dragmode = false;
-		if (changed) {
-			changed = false;
-			updateUrlParams();
-		}
-	}
-	
-	inline function moveDrag(x:Float, y:Float) {
-		mouse_x = x;
-		mouse_y = y;		
-		if (dragmode) {
-			positionX.value = (dragstart_x + mouse_x);
-			positionY.value = (dragstart_y + mouse_y);
-			changed = true;
-		}
-	}
-	*/
 
 	// TODO: extend peote-ui to let the Display also have the mousewheel-handler
 	override function onMouseWheel (deltaX:Float, deltaY:Float, deltaMode:MouseWheelMode):Void {
