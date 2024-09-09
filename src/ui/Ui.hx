@@ -108,12 +108,14 @@ class Ui
 		// --- PeoteUIDisplay with styles in Layer-Depth-Order ---
 		// -------------------------------------------------------
 		
-		peoteUiDisplay = new PeoteUIDisplay(0, 0, peoteView.width, peoteView.height,
+		peoteUiDisplay = new PeoteUIDisplay(0, 0, peoteView.width, peoteView.height, 0x00000000, 4, // 4 is maxTouchpoints
 			[ mainStyleBG, paramStyleBG, paramStyleFG, selectionStyle, fontStyle, cursorStyle ]
 		);
 		peoteView.addDisplay(peoteUiDisplay);
 		
 		// ---------- peoteUiDisplay Events -------------
+		active_touch_id = new Vector(peoteUiDisplay.maxTouchpoints);
+	
 		// peoteUiDisplay.onPointerOver = (_, e:PointerEvent) -> trace("UI->onPointerOver", e);
 		// peoteUiDisplay.onPointerOut = (_, e:PointerEvent) -> trace("UI->onPointerOut", e);
 		peoteUiDisplay.onPointerDown = pointerDown;
@@ -132,7 +134,6 @@ class Ui
 		// --------------------------------
 		// --------- main area ------------
 		// --------------------------------
-		
 
 		widthBeforeOverflow = Std.int( Math.max( Math.min( peoteView.width / 3, 500 ), 200));
 		mainArea_oldHeight = heightBeforeOverflow = Std.int( Math.max( Math.min( peoteView.height * 0.75, 500 ), 200));
@@ -311,8 +312,9 @@ class Ui
 	}
 
 	// ------------------------------------------------
-	// -------------- DRAGGING ------------------------
+	// --------- DRAGGING and ZOOM --------------------
 	// ------------------------------------------------
+
 	var mouse_x:Float = 0;
 	var mouse_y:Float = 0;
 	var mouse_start_x:Float = 0;
@@ -321,7 +323,7 @@ class Ui
 	var mouse_mode:Bool = false;
 	var touch_mode:Bool = false;
 
-	var active_touch_id:Vector<{x:Float, y:Float}> = new Vector(10); // TODO: make depend on how much allowed at same time
+	var active_touch_id:Vector<{x:Float, y:Float}>;
 	var active_touches = new Array<Int>(); // stores the touch-ids into order
 	
 	var touch_start_x:Float = 0; // center if 2 touchpoints
@@ -401,7 +403,7 @@ class Ui
 		else // ----- MOUSE UP -------
 		{
 			// trace("UI->onPointerUp MOUSE", e);
-			if ( e.type == PointerType.MOUSE && e.mouseButton != MouseButton.LEFT ) return;
+			if (e.type == PointerType.MOUSE && e.mouseButton != MouseButton.LEFT) return;
 			if (e.x != mouse_start_x || e.y != mouse_start_y) updateUrlParams();
 
 			mouse_mode = false;

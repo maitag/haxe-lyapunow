@@ -277,8 +277,7 @@ class Main extends Application
 			if (p == "i" || p == "n" || p == "x" || p == "y" || formulaParams.exists(p)) continue;
 			formulaParams.set( p, new Param(p, "uParam"+p, b.readFloat(), b.readFloat(), b.readFloat()) );
 			formulaParamsLength++; //TODO: error if TO MUCH PARAMETERS
-		}
-		
+		}		
 		// trace(formulaParams);
 	}
 	
@@ -310,7 +309,6 @@ class Main extends Application
 					ui.removeFormulaParam(c); // remove that widget by UI
 				}
 			}
-
 
 			var found_x = false;
 			var found_y = false;
@@ -432,7 +430,6 @@ class Main extends Application
 			Ui.paramChanged = false;
 			updateUrlParams();
 		}
-
 	}
 
 
