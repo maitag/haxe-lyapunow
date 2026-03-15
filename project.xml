@@ -9,7 +9,6 @@
 	
 	<app main="Main" path="bin" file="Main" />
 	
-	
 	<!--<window fps="60" width="800" height="600" vsync="true" resizable="true" hardware="true" allow-shaders="true" require-shaders="true" depth-buffer="true" stencil-buffer="false" /> -->
 	<window width="800" height="600" fps="61" />
 	<window width="0" height="0" fps="61" if="html5||android" />
@@ -60,18 +59,17 @@
 	<!--<haxedef name="peoteview_debug_macro" />-->
 	<!--<haxedef name="peoteview_debug_buffer" />-->
 	<!--<haxedef name="peoteview_debug_view" />-->
-	<!--<haxedef name="peoteview_debug_display" />
+	<!--<haxedef name="peoteview_debug_display" />-->
 	<!--<haxedef name="peoteview_debug_program" />-->
 	<!--<haxedef name="peoteview_debug_texture" />-->
-	<haxedef name="peoteview_debug_shader" />
-
-	<!--<haxeflag name="--no-traces" if="release" />-->
+	<!-- <haxedef name="peoteview_debug_shader" /> -->
 	
 	<!-- <haxedef name="webgl-debug" /> --> <!-- try with chrome and look here: https://www.khronos.org/webgl/wiki/Debugging -->
 	<!-- <haxedef name="source-map-content" /> --> <!-- to debug with chrome id needs also "-debug" -->
+
 	<haxeflag name="-dce" value="full" />
 	<!-- <haxedef name="dump=pretty output" /> -->
-	<haxedef name="keep_inline_positions" />
+	<!-- <haxedef name="keep_inline_positions" /> -->
 		
 	<!--<haxedef name="no-deprecation-warnings" />-->
 	
@@ -90,4 +88,5 @@
 	
 	<icon path="assets/lime.svg" />
 	
+	<!--<haxeflag name="--no-traces" if="release" />-->
 </project>

@@ -10,7 +10,7 @@ import peote.ui.event.WheelEvent;
 import peote.ui.event.PointerType;
 import peote.view.PeoteView;
 import peote.view.Color;
-import peote.view.UniformFloat;
+import peote.view.Uniform;
 
 import peote.text.Font;
 
@@ -39,10 +39,8 @@ class Ui
 
 	var updateUrlParams:Void->Void;
 
-	var positionX:UniformFloat;
-	var positionY:UniformFloat;
-	var scaleX:UniformFloat;
-	var scaleY:UniformFloat;
+	var position:UniformVec2;
+	var scale:UniformVec2;
 
 	var defaultParams:DefaultParams;
 	var formulaParams:FormulaParams;
@@ -71,7 +69,7 @@ class Ui
 	public function new(
 		peoteView:PeoteView,
 		updateUrlParams:Void->Void,
-		positionX:UniformFloat, positionY:UniformFloat, scaleX:UniformFloat, scaleY:UniformFloat, 
+		position:UniformVec2, scale:UniformVec2, 
 		defaultParams:DefaultParams,
 		formulaParams:FormulaParams,
 		posColor:Color, midColor:Color, negColor:Color, 
@@ -81,10 +79,8 @@ class Ui
 	{
 		this.peoteView = peoteView;
 		this.updateUrlParams = updateUrlParams;
-		this.positionX = positionX;
-		this.positionY = positionY;
-		this.scaleX = scaleX;
-		this.scaleY = scaleY;
+		this.position = position;
+		this.scale = scale;
 		this.defaultParams = defaultParams;
 		this.formulaParams = formulaParams;
 		this.posColor = posColor; this.midColor = midColor; this.negColor = negColor;
@@ -353,9 +349,9 @@ class Ui
 				touch_start_distance = Math.sqrt( (t.x - e.x)*(t.x - e.x) + (t.y - e.y)*(t.y - e.y) );
 			}
 
-			touch_position_start_x = positionX.value;
-			touch_position_start_y = positionY.value;
-			touch_scale_start = scaleX.value;
+			touch_position_start_x = position.value.x;
+			touch_position_start_y = position.value.y;
+			touch_scale_start = scale.value.x;
 
 			touch_mode = true;
 		}
@@ -364,8 +360,8 @@ class Ui
 			// trace("UI->onPointerDown MOUSE", e);
 			if ( e.type == PointerType.MOUSE && e.mouseButton != MouseButton.LEFT ) return;
 			
-			mouse_start_x = positionX.value - e.x;
-			mouse_start_y = positionY.value - e.y;
+			mouse_start_x = position.value.x - e.x;
+			mouse_start_y = position.value.y - e.y;
 
 			mouse_mode = true;
 		}	
@@ -394,9 +390,9 @@ class Ui
 					touch_start_y = (t0.y + t1.y)/2;
 					touch_start_distance = Math.sqrt( (t0.x - t1.x)*(t0.x - t1.x) + (t0.y - t1.y)*(t0.y - t1.y) );
 				}
-				touch_position_start_x = positionX.value;
-				touch_position_start_y = positionY.value;
-				touch_scale_start = scaleX.value;
+				touch_position_start_x = position.value.x;
+				touch_position_start_y = position.value.y;
+				touch_scale_start = scale.value.x;
 			}
 
 		}
@@ -419,16 +415,16 @@ class Ui
 			if (active_touches.length == 1) {
 				// simple DRAG by one touchpoint only
 				var t = active_touch_id.get(e.touch.id);
-				positionX.value = touch_position_start_x + (e.x - touch_start_x);
-				positionY.value = touch_position_start_y + (e.y - touch_start_y);
+				position.value.x = touch_position_start_x + (e.x - touch_start_x);
+				position.value.y = touch_position_start_y + (e.y - touch_start_y);
 			}
 			else if (e.touch.id == active_touches[0] || e.touch.id == active_touches[1]) {
 				// DRAGGING the Center of the latest pressed two touchpoints
 				var t0 = active_touch_id.get(active_touches[0]);
 				var t1 = active_touch_id.get(active_touches[1]);
 
-				positionX.value = touch_position_start_x + (t0.x + t1.x)/2 - touch_start_x;
-				positionY.value = touch_position_start_y + (t0.y + t1.y)/2 - touch_start_y;
+				position.value.x = touch_position_start_x + (t0.x + t1.x)/2 - touch_start_x;
+				position.value.y = touch_position_start_y + (t0.y + t1.y)/2 - touch_start_y;
 
 				// ZOOMING by distance between the two latest pressed touchpoints
 				var scale_new_value = touch_scale_start * Math.sqrt( (t0.x - t1.x)*(t0.x - t1.x) + (t0.y - t1.y)*(t0.y - t1.y) ) / touch_start_distance;
@@ -437,9 +433,9 @@ class Ui
 				var y:Float = (t0.y + t1.y)/2;
 
 				if ( scale_new_value > 0.0001 && scale_new_value < 0xfffff) {
-					positionX.value -= (scale_new_value/touch_scale_start) * (x - positionX.value) - (x - positionX.value);
-					positionY.value -= (scale_new_value/touch_scale_start) * (y - positionY.value) - (y - positionY.value);
-					scaleX.value = scaleY.value = scale_new_value;
+					position.value.x -= (scale_new_value/touch_scale_start) * (x - position.value.x) - (x - position.value.x);
+					position.value.y -= (scale_new_value/touch_scale_start) * (y - position.value.y) - (y - position.value.y);
+					scale.value.x = scale.value.y = scale_new_value;
 				}
 			} 
 
@@ -451,8 +447,8 @@ class Ui
 			mouse_x = e.x;
 			mouse_y = e.y;		
 			if (!touch_mode && mouse_mode) {
-				positionX.value = (mouse_start_x + mouse_x);
-				positionY.value = (mouse_start_y + mouse_y);
+				position.value.x = (mouse_start_x + mouse_x);
+				position.value.y = (mouse_start_y + mouse_y);
 			}
 		}
 	}
@@ -460,23 +456,23 @@ class Ui
 	public function mouseWheel(deltaX:Float, deltaY:Float, deltaMode:MouseWheelMode, isShift:Bool, zoomstep:Float = 1.2) {
 		if (mouse_x >= mainArea.x && mouse_y <= mainArea.bottom) return;
 		if ( deltaY > 0 ) {
-			if (scaleX.value < 0xfffff) {
-				positionX.value -= zoomstep * (mouse_x - positionX.value) - (mouse_x - positionX.value);
-				scaleX.value *= zoomstep;
+			if (scale.value.x < 0xfffff) {
+				position.value.x -= zoomstep * (mouse_x - position.value.x) - (mouse_x - position.value.x);
+				scale.value.x *= zoomstep;
 			}
-			if ( !isShift && scaleY.value < 0xfffff) {
-				positionY.value -= zoomstep * (mouse_y - positionY.value) - (mouse_y - positionY.value);
-				scaleY.value *= zoomstep;
+			if ( !isShift && scale.value.y < 0xfffff) {
+				position.value.y -= zoomstep * (mouse_y - position.value.y) - (mouse_y - position.value.y);
+				scale.value.y *= zoomstep;
 			}
 		}
 		else {
-			if ( scaleX.value > 0.0001 ) {
-				positionX.value -= (mouse_x - positionX.value) / zoomstep - (mouse_x - positionX.value);
-				scaleX.value /= zoomstep;
+			if ( scale.value.x > 0.0001 ) {
+				position.value.x -= (mouse_x - position.value.x) / zoomstep - (mouse_x - position.value.x);
+				scale.value.x /= zoomstep;
 			}
-			if ( !isShift && scaleY.value > 0.0001 ) {
-				positionY.value -= (mouse_y - positionY.value) / zoomstep - (mouse_y - positionY.value);
-				scaleY.value /= zoomstep;
+			if ( !isShift && scale.value.y > 0.0001 ) {
+				position.value.y -= (mouse_y - position.value.y) / zoomstep - (mouse_y - position.value.y);
+				scale.value.y /= zoomstep;
 			}
 		}
 		

@@ -1,10 +1,11 @@
 package;
 
+import haxe.ds.StringMap;
 import peote.view.Element;
 import peote.view.Display;
 import peote.view.Buffer;
 import peote.view.Program;
-import peote.view.UniformFloat;
+import peote.view.Uniform;
 import peote.view.Color;
 import Formula;
 
@@ -37,7 +38,7 @@ class Lyapunow implements Element
 	static public var element:Lyapunow;
 	
 	static public function init(display:Display, formula:Formula, sequence:Array<String>,
-		positionX:UniformFloat, positionY:UniformFloat, scaleX:UniformFloat, scaleY:UniformFloat, 
+		position:UniformVec2, scale:UniformVec2, 
 		defaultParams:DefaultParams, formulaParams:FormulaParams,
 		posColor:Color, midColor:Color, negColor:Color)
 	{	
@@ -46,7 +47,7 @@ class Lyapunow implements Element
 		
 		program.setColorFormula( 'lyapunow(posColor, midColor, negColor)', false );
 		program.setFragmentFloatPrecision("high", false);
-		updateShader(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
+		updateShader(formula, sequence, position, scale, defaultParams, formulaParams);
 		
 		display.addProgram(program);
 
@@ -70,7 +71,7 @@ class Lyapunow implements Element
 	}
 
 	static public function updateShader(formula:Formula, sequence:Array<String>,
-		positionX:UniformFloat, positionY:UniformFloat, scaleX:UniformFloat, scaleY:UniformFloat, 
+		position:UniformVec2, scale:UniformVec2, 
 		defaultParams:DefaultParams, formulaParams:FormulaParams) {
 
 		// trace("formula", formula.toString("glsl"));
@@ -97,6 +98,12 @@ class Lyapunow implements Element
 			main_sequence +='i = func(i, $p); index += (log(abs(deriv(i, $p)))*uBalance + deriv(i, $p)*(1.0-uBalance)) / 2.0;';
 		}
 
+		// defaultParams.uniforms.concat( [for (v in formulaParams) v.uniform] ).concat([positionX, positionY, scaleX, scaleY])
+		var uniformMap:StringMap<Uniform> = defaultParams.uniforms;
+		for (v in formulaParams) uniformMap.set(v.identifier, v.uniform);
+		uniformMap.set("uPosition", position);
+		uniformMap.set("uScale", scale);
+
 		program.injectIntoFragmentShader(
 			'
 				float func(float i, float n $extra_func_param) {
@@ -119,7 +126,7 @@ class Lyapunow implements Element
 				{		
 					float i = uStartIndex;
 
-					vec2 xy = ( (vTexCoord*vSize - vec2(uPositionX, uPositionY))/400.0 ) / vec2(uScaleX, uScaleY);
+					vec2 xy = ( (vTexCoord*vSize - uPosition)/400.0 ) / uScale;
 					
 					int iter_pre =  int(floor(uIterPre));
 					int iter_main = int(floor(uIterMain));
@@ -169,7 +176,7 @@ class Lyapunow implements Element
 				}			
 			'
 			, false // inject uTime
-			, defaultParams.uniforms.concat( [for (v in formulaParams) v.uniform] ).concat([positionX, positionY, scaleX, scaleY])
+			, uniformMap
 			);
 	
 	}

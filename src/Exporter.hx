@@ -1,6 +1,6 @@
 package;
 
-import peote.view.UniformFloat;
+import peote.view.Uniform;
 import peote.view.Color;
 import Formula;
 
@@ -11,7 +11,7 @@ import Param.FormulaParams;
 class Exporter
 {
 	static public function generateOSL(formula:Formula, sequence:Array<String>,
-		positionX:UniformFloat, positionY:UniformFloat, scaleX:UniformFloat, scaleY:UniformFloat, 
+		position:UniformVec2, scale:UniformVec2, 
 		defaultParams:DefaultParams, formulaParams:FormulaParams):String
 	{
 		var func:String = formula.toString("glsl");
@@ -148,11 +148,11 @@ shader node_lyapunov(
 	public static var filenameOSL:String = "lyapunow.osl";
 
 	public static function saveDialogueOSL(formula:Formula, sequence:Array<String>,
-		positionX:UniformFloat, positionY:UniformFloat, scaleX:UniformFloat, scaleY:UniformFloat, 
+		position:UniformVec2, scale:UniformVec2, 
 		defaultParams:DefaultParams, formulaParams:FormulaParams)
 	{
 		
-		var osl:String = generateOSL(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
+		var osl:String = generateOSL(formula, sequence, position, scale, defaultParams, formulaParams);
 		
 		#if html5
 
@@ -183,15 +183,15 @@ shader node_lyapunov(
 	}
 
 	public static function saveOSL(formula:Formula, sequence:Array<String>,
-		positionX:UniformFloat, positionY:UniformFloat, scaleX:UniformFloat, scaleY:UniformFloat, 
+		position:UniformVec2, scale:UniformVec2, 
 		defaultParams:DefaultParams, formulaParams:FormulaParams)
 	{
 		#if html5
-		saveDialogueOSL(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
+		saveDialogueOSL(formula, sequence, position, scale, defaultParams, formulaParams);
 		#else
 
-		if (pathOSL == null) saveDialogueOSL(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
-		else sys.io.File.saveContent(pathOSL+filenameOSL, generateOSL(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams));
+		if (pathOSL == null) saveDialogueOSL(formula, sequence, position, scale, defaultParams, formulaParams);
+		else sys.io.File.saveContent(pathOSL+filenameOSL, generateOSL(formula, sequence, position, scale, defaultParams, formulaParams));
 		#end
 	}
 

@@ -20,7 +20,7 @@ import lime.ui.Touch;
 import peote.view.PeoteView;
 import peote.view.Display;
 import peote.view.Color;
-import peote.view.UniformFloat;
+import peote.view.Uniform;
 
 import Formula;
 import FormulaException;
@@ -35,10 +35,8 @@ class Main extends Application
 	var lyapunowDisplay:Display;
 	var ui:Ui;
 
-	var positionX:UniformFloat;
-	var positionY:UniformFloat;
-	var scaleX:UniformFloat;
-	var scaleY:UniformFloat;
+	var position:UniformVec2;
+	var scale:UniformVec2;
 	
 	var defaultParams:DefaultParams;
 	var formulaParams = new FormulaParams();
@@ -74,10 +72,8 @@ class Main extends Application
 
 		// ----- param juggling -.-...-....-.-....---
 
-		positionX = new UniformFloat("uPositionX", 0.0);
-		positionY = new UniformFloat("uPositionY", 0.0);
-		scaleX = new UniformFloat("uScaleX", 1.0);
-		scaleY = new UniformFloat("uScaleY", 1.0);
+		position = new UniformVec2({x:0.0, y:0.0});
+		scale = new UniformVec2({x:1.0, y:1.0});
 
 		defaultParams = {
 			startIndex: new Param( "Start index:"   , "uStartIndex", 0, -10,  10),
@@ -111,7 +107,7 @@ class Main extends Application
 
 		ui = new Ui(peoteView,
 			updateUrlParams,
-			positionX, positionY, scaleX, scaleY,
+			position, scale,
 			defaultParams,
 			formulaParams,
 			posColor, midColor, negColor,
@@ -128,7 +124,7 @@ class Main extends Application
 	{
 		trace("onUiInit");
 
-		Lyapunow.init(lyapunowDisplay, formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams, posColor, midColor, negColor);
+		Lyapunow.init(lyapunowDisplay, formula, sequence, position, scale, defaultParams, formulaParams, posColor, midColor, negColor);
 
 		uiInit = true;
 		
@@ -161,10 +157,10 @@ class Main extends Application
 	public function serializeParams():BytesOutput
 	{
 		var b = new BytesOutput();
-		b.writeFloat(positionX.value);
-		b.writeFloat(positionY.value);
-		b.writeFloat(scaleX.value);
-		b.writeFloat(scaleY.value);
+		b.writeFloat(position.value.x);
+		b.writeFloat(position.value.y);
+		b.writeFloat(scale.value.y);
+		b.writeFloat(scale.value.y);
 
 		b.writeFloat(defaultParams.startIndex.value);
 		b.writeFloat(defaultParams.startIndex.valueStart);
@@ -230,10 +226,10 @@ class Main extends Application
 	{
 		//todo: TRY CATCH
 
-		positionX.value = b.readFloat();
-		positionY.value = b.readFloat();
-		scaleX.value = b.readFloat();
-		scaleY.value = b.readFloat();
+		position.value.x = b.readFloat();
+		position.value.y = b.readFloat();
+		scale.value.x = b.readFloat();
+		scale.value.y = b.readFloat();
 
 		defaultParams.startIndex.value = b.readFloat();
 		defaultParams.startIndex.valueStart = b.readFloat();
@@ -422,7 +418,7 @@ class Main extends Application
 
 		if (updateShader) {
 			// call lyapunows update function
-			Lyapunow.updateShader(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
+			Lyapunow.updateShader(formula, sequence, position, scale, defaultParams, formulaParams);
 			Ui.paramChanged = true;
 		}
 
@@ -440,9 +436,9 @@ class Main extends Application
 
 		// save OSL
 		if ((modifier & KeyModifier.CTRL>0) && (modifier & KeyModifier.SHIFT>0) && ( keyCode == KeyCode.RETURN || keyCode == KeyCode.NUMPAD_ENTER) )
-			Exporter.saveDialogueOSL(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
+			Exporter.saveDialogueOSL(formula, sequence, position, scale, defaultParams, formulaParams);
 		if ((modifier & KeyModifier.CTRL>0) && ( keyCode == KeyCode.RETURN || keyCode == KeyCode.NUMPAD_ENTER) )
-			Exporter.saveOSL(formula, sequence, positionX, positionY, scaleX, scaleY, defaultParams, formulaParams);
+			Exporter.saveOSL(formula, sequence, position, scale, defaultParams, formulaParams);
 
 	}
 

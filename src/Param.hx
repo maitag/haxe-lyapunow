@@ -1,6 +1,7 @@
 package;
 
-import peote.view.UniformFloat;
+import haxe.ds.StringMap;
+import peote.view.Uniform;
 
 class Param {
 	public var label:String;
@@ -22,7 +23,7 @@ class Param {
 		this.valueEnd = valueEnd;
 		this.minStart = minStart;
 		this.maxEnd = maxStart;
-		uniform = new UniformFloat(identifier, value);
+		uniform = new UniformFloat(value);
 	}
 }
 
@@ -33,13 +34,13 @@ class DefaultParams {
 	public var iterMain:Param;
 	public var balance:Param;
 
-	public var uniforms(get, never):Array<UniformFloat>;
-	inline function get_uniforms():Array<UniformFloat> {
+	public var uniforms(get, never):StringMap<Uniform>;
+	inline function get_uniforms():StringMap<Uniform> {
 		return [
-			startIndex.uniform,
-			iterPre.uniform,
-			iterMain.uniform,
-			balance.uniform,
+			"uStartIndex" => startIndex.uniform,
+			"uIterPre" => iterPre.uniform,
+			"uIterMain" => iterMain.uniform,
+			"uBalance" => balance.uniform,
 		];
 	}
 }
